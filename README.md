@@ -1,7 +1,8 @@
-cookiecutter_datascience
+Twitter Sentiment Analysis
 ==============================
 
 A Python based project for performing sentiment analysis on Twitter data.
+work in progress..
 
 Project Organization
 ------------
@@ -10,7 +11,7 @@ Project Organization
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
-    │   ├── external       <- Data from third party sources.
+    │   ├── new            <- Newly scraped data.
     │   ├── interim        <- Intermediate data that has been transformed.
     │   ├── processed      <- The final, canonical data sets for modeling.
     │   └── raw            <- The original, immutable data dump.
