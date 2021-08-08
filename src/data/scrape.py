@@ -5,7 +5,7 @@ import re
 nest_asyncio.apply()
 
 # Extract scrape queries
-f = open("src\data\scrape_keyword.txt", "r")
+f = open("./src/data/scrape_keyword.txt", "r")
 for line in f:
     if "Start Date" in line:
         start_date = re.findall(r"\d{4}-\d{2}-\d{2}", line)[0]
