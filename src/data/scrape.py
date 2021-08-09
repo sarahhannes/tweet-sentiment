@@ -14,7 +14,7 @@ def add_log(msg, date=date.today(), current_dir=os.path.basename(__file__)):
     """
     with open("./log.txt", "a+") as logfile:
         logfile.write("\n")
-        logfile.write(f"{str(date)}/GH Action@{current_dir}: {msg}")
+        logfile.write(f"{str(date)}/GH Action@{current_dir}: {msg};")
 
 
 # Get last_update date
@@ -24,12 +24,12 @@ try:
     last_update = str(col_index.values[0])  # get last_update date as str
 except IndexError as e:  # No LASTUPDATE file found, so set last_update as today()-1
     last_update = str(date.today()-timedelta(days=1))
-    add_log(msg=f"LASTUPDATE.txt not found. Set start scrape date as {last_update}.")
+    add_log(msg=f"LASTUPDATE.txt not found. Set start scrape date as {last_update}")
 
 # if last_update == today
 if last_update == str(date.today()):
     # update log
-    add_log(msg="Scraped data is up to date. No action performed.")
+    add_log(msg="Scraped data is up to date. No action performed")
 
 else:
     try:  # Scrape, save as csv, update LASTUPDATE, update log
@@ -64,4 +64,4 @@ else:
         add_log(msg=f"Scraped and saved data as {end_date}_new.csv")
 
     except FileNotFoundError as e:
-        add_log(msg=f"{e}.Please fix")
+        add_log(msg=f"{e}. Please fix")
