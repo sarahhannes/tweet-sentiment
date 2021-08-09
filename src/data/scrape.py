@@ -2,28 +2,32 @@ import twint
 import nest_asyncio
 import glob
 import pandas as pd
-import datetime
+from datetime import date, timedelta
 import os
 
 nest_asyncio.apply()
 
 
-def add_log(msg, date=datetime.date.today(), current_dir=os.path.basename(__file__)):
+def add_log(msg, date=date.today(), current_dir=os.path.basename(__file__)):
     """
-    append to log.txt
+    Append to log.txt
     """
     with open("./log.txt", "a+") as logfile:
+        logfile.write("\n")
         logfile.write(f"{str(date)}/GH Action@{current_dir}: {msg}")
 
 
 # Get last_update date
-lastupdate_file = glob.glob('./src/data/LASTUPDATE.txt')[0]
-col_index = pd.read_csv(lastupdate_file).columns
-last_update = str(col_index.values[0])  # get last_update date as str
-print('here', last_update)
+try:
+    lastupdate_file = glob.glob('./LASTUPDATE.txt')[0]
+    col_index = pd.read_csv(lastupdate_file).columns
+    last_update = str(col_index.values[0])  # get last_update date as str
+except IndexError as e:  # No LASTUPDATE file found, so set last_update as today()-1
+    last_update = str(date.today()-timedelta(days=1))
+    add_log(msg=f"LASTUPDATE.txt not found. Set start scrape date as {last_update}.")
 
 # if last_update == today
-if last_update == str(datetime.date.today()):
+if last_update == str(date.today()):
     # update log
     add_log(msg="Scraped data is up to date. No action performed.")
 
@@ -31,7 +35,7 @@ else:
     try:  # Scrape, save as csv, update LASTUPDATE, update log
         # Query parameters
         start_date = last_update  # last_update date
-        end_date = str(datetime.date.today())  # today's date
+        end_date = str(date.today())  # today's date
         hashtag = '#dhl'
 
         # Initialize configuration
