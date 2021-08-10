@@ -23,7 +23,7 @@ jobs:
             python -m pip install --upgrade pip
             pip install twint
             pip install nest_asyncio
-            pip install --yes --file requirements.txt
+            pip install -r requirements.txt
           
       - name: Execute py script
         working-directory: ./src/data
