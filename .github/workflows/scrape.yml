@@ -6,7 +6,7 @@ jobs:
   # This workflow contains a single job called "build"
   scraping:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -23,6 +23,7 @@ jobs:
             python -m pip install --upgrade pip
             pip install twint
             pip install nest_asyncio
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           
       - name: Execute py script
         working-directory: ./src/data
