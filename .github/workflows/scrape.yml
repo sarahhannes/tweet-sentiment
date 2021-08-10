@@ -25,8 +25,8 @@ jobs:
             pip install nest_asyncio
           
       - name: Execute py script
+        working-directory: ./src/data
         run: |
-          cd /src/data/
           python scrape.py
           
       - name: Commit files
