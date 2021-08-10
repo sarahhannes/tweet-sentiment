@@ -11,8 +11,6 @@ def add_log(msg, date=date.today()):
     :type msg: str
     :param date: logging date
     :type date: str
-    :param current_dir: name of current .py script
-    :type current_dir: directory object
 
     :rtype: str
     :return: logs in the form of date, current directory, message
