@@ -3,18 +3,9 @@ import nest_asyncio
 import glob
 import pandas as pd
 from datetime import date, timedelta
-import os
+from write_log import add_log
 
 nest_asyncio.apply()
-
-
-def add_log(msg, date=date.today(), current_dir=os.path.basename(__file__)):
-    """
-    Append to log.txt
-    """
-    with open("./log.txt", "a+") as logfile:
-        logfile.write("\n")
-        logfile.write(f"{str(date)}/GH Action@{current_dir}: {msg};")
 
 
 # Get last_update date
