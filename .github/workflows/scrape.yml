@@ -12,6 +12,11 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+          timezoneMacos: "Asia/Singapore"
+          timezoneWindows: "Singapore Standard Time"
 
       - name: Setup Python
         uses: actions/setup-python@v2
@@ -36,7 +41,7 @@ jobs:
           git config --global user.name "Sarah Hannes"
           git add .
           git commit -m "Scrape using GH Action $(date)"
-          git push origin main
+          git push --set-upstream origin test-ghaction
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
