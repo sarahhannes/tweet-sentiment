@@ -26,10 +26,13 @@ jobs:
           
       - name: Execute py script
         run: |
-          python ./src/data/scrape.py
+          cd /src/data/
+          python scrape.py
           
       - name: Commit files
         run: |
+          git config --global user.email "siti.sarah.a.hannes@gmail.com"
+          git config --global user.name "Sarah Hannes"
           git add .
           git commit -m "Scrape using GH Action $(date)"
           git push origin main
