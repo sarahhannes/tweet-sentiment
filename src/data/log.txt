@@ -9,3 +9,12 @@
 2021-08-10/GH Action@C:/Users/Sarah/90min/Python/tweet-sentiment/src/data/scrape.py: Scraped data is up to date. No action performed;
 2021-08-10/GH Action@['scrape.py']: Scraped data is up to date. No action performed;
 2021-08-10/GH Action@scrape.py: Scraped data is up to date. No action performed;
+2021-08-11/GH Action@scrape.py: Scraped and saved data as 2021-08-11_new.csv;
+2021-08-11/GH Action@scrape.py: LASTUPDATE.txt not found. Set start scrape date as 2021-08-10;
+2021-08-11/GH Action@scrape.py: [Errno 2] No such file or directory: './data/new/2021-08-11_new.csv'. Please fix;
+2021-08-11/GH Action@scrape.py: LASTUPDATE.txt not found. Set start scrape date as 2021-08-10;
+2021-08-11/GH Action@scrape.py: [Errno 2] No such file or directory: './data/new/2021-08-11_new.txt'. Please fix;
+2021-08-11/GH Action@scrape.py: LASTUPDATE.txt not found. Set start scrape date as 2021-08-10;
+2021-08-11/GH Action@scrape.py: [Errno 2] No such file or directory: './data/new/2021-08-11_new.txt'. Please fix;
+2021-08-11/GH Action@scrape.py: LASTUPDATE.txt not found. Set start scrape date as 2021-08-10;
+2021-08-11/GH Action@scrape.py: Scraped data is up to date. No action performed;
