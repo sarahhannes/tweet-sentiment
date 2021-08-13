@@ -58,5 +58,3 @@ else:
 
     except FileNotFoundError as e:
         add_log(msg=f"{e}. Please fix")
-
-# TODO: move /src/data/log.txt to ./log.txt
