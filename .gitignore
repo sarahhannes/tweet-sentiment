@@ -96,3 +96,5 @@ data/new/*
 
 # gitkeep files
 !.gitkeep
+/data
+/models
