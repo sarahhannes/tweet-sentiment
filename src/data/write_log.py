@@ -22,6 +22,13 @@ def add_log(msg):
 
     date_now = datetime.now()
     dt_str = date_now.strftime("%Y-%m-%d %H:%M:%S")
-    with open("./src/data/log.txt", "a+") as logfile:
-        logfile.write("\n")
-        logfile.write(f"{str(dt_str)}@{short_filename}: {msg};")
+
+    try:
+        with open("./src/data/log.txt", "a+") as logfile:
+            logfile.write("\n")
+            logfile.write(f"{str(dt_str)}@{short_filename}: {msg};")
+
+    except FileNotFoundError as e:
+        with open("./log.txt", "a+") as logfile:
+            logfile.write("\n")
+            logfile.write(f"{str(dt_str)}@{short_filename}: {msg};")
