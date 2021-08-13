@@ -1,9 +1,9 @@
-from datetime import date
+from datetime import datetime
 import inspect
 import re
 
 
-def add_log(msg, date=date.today()):
+def add_log(msg):
     """
     Add logs to log.txt
 
@@ -20,6 +20,8 @@ def add_log(msg, date=date.today()):
      function_name, lines, index) = inspect.getframeinfo(previous_frame)
     short_filename = re.findall("([^\/]+$)", filename)[0]
 
-    with open("./log.txt", "a+") as logfile:
+    date_now = datetime.now()
+    dt_str = date_now.strftime("%Y-%m-%d %H:%M:%S")
+    with open("./src/data/log.txt", "a+") as logfile:
         logfile.write("\n")
-        logfile.write(f"{str(date)}/GH Action@{short_filename}: {msg};")
+        logfile.write(f"{str(dt_str)}@{short_filename}: {msg};")
