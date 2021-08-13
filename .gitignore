@@ -88,13 +88,5 @@ target/
 # Mypy cache
 .mypy_cache/
 
-# exclude data from source control by default
-data/raw/*
-data/interim/*
-data/processed/*
-data/new/*
-
-# gitkeep files
-!.gitkeep
 /data
 /models
