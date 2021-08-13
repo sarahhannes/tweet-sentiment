@@ -4,7 +4,7 @@ import re
 import os
 from write_log import add_log
 
-new_files = glob.glob("./src/data/*_new.csv")  # find /src/data/*_new.csv
+new_files = glob.glob("./src/data/*_new.txt")  # find /src/data/*_new.csv
 
 if new_files:  # if there is new file(s)
     print('Got new file(s)!!')
@@ -14,14 +14,14 @@ if new_files:  # if there is new file(s)
         print(new_files)
         print(max(new_files))
         latest_new_file = max(new_files)
-        df_new = pd.read_csv(latest_new_file)  # read the latest *_new.csv file
+        df_new = pd.read_csv(latest_new_file,  sep='\t')  # read the latest *_new.csv file
         print('here is the df_new!')
         print(latest_new_file)
         print(df_new)
 
     else:  # if there is only 1 *_new.csv file
         latest_new_file = new_files[0]
-        df_new = pd.read_csv(latest_new_file)
+        df_new = pd.read_csv(latest_new_file, sep='\t')
 
     date_new_list = re.findall("([0-9]+)", latest_new_file)
     date_new_file = '-'.join(date_new_list)  # get date from latest_new_file
@@ -61,7 +61,7 @@ if new_files:  # if there is new file(s)
             df_merged.to_csv(f"./data/raw/{date_new_file}_raw.txt", index=False, sep="\t")  # save file in /data/raw/
 
             if os.path.exists(latest_raw_file) and os.path.isfile(latest_raw_file):  # check if latest_raw_file exist
-                #os.remove(latest_raw_file)  # delete old latest_raw_file #to be uncommented
+                os.remove(latest_raw_file)  # delete old latest_raw_file #to be uncommented
                 add_log("Raw file updated. Old raw file deleted")  # update log
 
     else:  # no raw file found in /data/raw/
@@ -75,7 +75,7 @@ if new_files:  # if there is new file(s)
     # Delete /src/data/*_new.txt
     for file in new_files:
         print('delete new file')
-        # os.remove(file)
+        os.remove(file)
         add_log(msg=f"Deleted {file}")
 
 else:  # no new file found in /src/data/
