@@ -41,7 +41,7 @@ jobs:
           git config --global user.name "Sarah Hannes"
           git add .
           git commit -m "Scrape using GH Action $(date)"
-          git push origin main
+          git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
