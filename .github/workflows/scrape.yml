@@ -47,7 +47,7 @@ jobs:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
 
-  Appending Raw & Moving Newly scraped data:
+  Cleaning-up:
     # The type of runner that the job will run on
     runs-on: windows-latest
 
