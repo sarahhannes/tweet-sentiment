@@ -35,6 +35,11 @@ jobs:
         run: |
           python scrape.py
 
+      - uses: iterative/dvc-action
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dvc_repro_file: data.dvc
+
       - name: Execute append_raw.py
         working-directory: ./src/data
         run: |
