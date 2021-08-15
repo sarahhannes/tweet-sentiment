@@ -36,8 +36,8 @@ jobs:
           python scrape.py
 
       - name: Execute append_raw.py
-          run: |
-            python append_raw.py
+        run: |
+          python append_raw.py
 
       - name: Commit files
         run: |
