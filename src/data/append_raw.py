@@ -1,3 +1,9 @@
+"""
+Append newly scraped data to /data/raw/*_raw.txt
+Copy newly scraped data to /data/new/*_new.txt
+Remove now redundant newly scraped data from /src/data folder
+"""
+
 import glob
 import pandas as pd
 import re

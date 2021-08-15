@@ -1,4 +1,6 @@
-
+"""
+Scrape twitter for keyword specified in `hashtag`
+"""
 
 import glob
 import twint
