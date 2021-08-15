@@ -36,7 +36,6 @@ jobs:
           python scrape.py
 
       - name: Execute append_raw.py
-          working-directory: ./src/data
           run: |
             python append_raw.py
 
