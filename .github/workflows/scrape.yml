@@ -4,7 +4,7 @@ on: workflow_dispatch # manual trigger (for now)
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  scraping:
+  Scraping:
     # The type of runner that the job will run on
     runs-on: windows-latest
 
@@ -30,10 +30,52 @@ jobs:
             pip install nest_asyncio
             pip install -r requirements.txt
           
-      - name: Execute py script
+      - name: Execute scrape.py
         working-directory: ./src/data
         run: |
           python scrape.py
+          python append_raw.py
+
+      - name: Commit files
+        run: |
+          git config --global user.email "siti.sarah.a.hannes@gmail.com"
+          git config --global user.name "Sarah Hannes"
+          git add .
+          git commit -m "Scrape using GH Action $(date)"
+          git push --set-upstream origin dev
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
+
+  Appending Raw & Moving Newly scraped data:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+          timezoneMacos: "Asia/Singapore"
+          timezoneWindows: "Singapore Standard Time"
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install git+https://github.com/twintproject/twint.git
+          pip install nest_asyncio
+          pip install -r requirements.txt
+
+      - name: Execute append_raw.py
+        working-directory: ./src/data
+        run: |
           python append_raw.py
 
       - name: Commit files
