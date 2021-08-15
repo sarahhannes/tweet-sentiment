@@ -1,3 +1,4 @@
+
 name: Clean up scraped data
 on: workflow_dispatch # manual trigger (for now)
 
