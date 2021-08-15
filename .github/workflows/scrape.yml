@@ -35,15 +35,6 @@ jobs:
         run: |
           python scrape.py
 
-      - uses: iterative/dvc-action
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dvc_repro_file: your-file.dvc
-
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
       - name: Execute append_raw.py
         working-directory: ./src/data
         run: |
@@ -55,6 +46,9 @@ jobs:
           git config --global user.name "Sarah Hannes"
           git pull
           git add .
+          dvc add data
+          dvc commit
+          dvc push
           git commit -m "Scrape using GH Action $(date)"
           git push --set-upstream origin dev
         env:
