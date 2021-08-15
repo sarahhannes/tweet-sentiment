@@ -50,3 +50,7 @@
 2021-08-15 17:13:15@append_raw.py: No new file found. No action performed;
 2021-08-15 17:32:38@scrape.py: Scraped data is up to date. No action performed;
 2021-08-15 17:32:39@append_raw.py: No new file found. No action performed;
+2021-08-15 21:19:23@append_raw.py: Raw file updated. Old raw file deleted;
+2021-08-15 21:19:23@append_raw.py: Copied new file and save as ./data/new/2021-08-15_new.txt;
+2021-08-15 21:19:23@append_raw.py: Deleted ./src/data\2021-08-13_new.txt;
+2021-08-15 21:19:23@append_raw.py: Deleted ./src/data\2021-08-15_new.txt;
