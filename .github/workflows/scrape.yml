@@ -34,7 +34,8 @@ jobs:
         working-directory: ./src/data
         run: |
           python scrape.py
-          
+          python append_raw.py
+
       - name: Commit files
         run: |
           git config --global user.email "siti.sarah.a.hannes@gmail.com"
