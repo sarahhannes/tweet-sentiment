@@ -28,4 +28,4 @@ twint.run.Search(d)
 df = twint.storage.panda.Tweets_df
 
 # Write to file (if file not found, otherwise, append)
-df.to_csv(f"raw_data.txt", index=False, sep="\t", mode='a+')
+df.to_csv("raw_data.txt", sep="\t", mode='a', header=False,  index=False)
