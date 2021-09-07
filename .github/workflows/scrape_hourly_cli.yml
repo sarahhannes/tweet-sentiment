@@ -1,4 +1,4 @@
-name: Scrape Hourly
+name: Scrape Hourly CLI
 #on: workflow_dispatch # manual trigger (for now)
 on:
   schedule:
