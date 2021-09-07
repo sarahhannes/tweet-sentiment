@@ -37,7 +37,12 @@ jobs:
       - name: Scrape Hourly - CLI
         run: |
             $since = [DateTime]::Now.AddHours(-1).ToString('yyyy-MM-dd HH:mm:ss')
-            twint -s \#dhl --since $since --hashtags --stats -o file1.txt
+            twint -s \#dhl --since $since --hashtags --stats -o new_data.txt
+      
+      - name: Append newly scraped data to raw_data
+        run: |
+            Add-Content -Path .\new_data.txt -value ""
+            Get-Content -Path .\raw_data.txt | Add-Content -Path .\new_data.txt
 
       - name: Commit files
         run: |
