@@ -5,6 +5,10 @@ on:
     # Runs "at minute 0 every hour" (see https://crontab.guru)
     - cron: '0 * * * *'
 
+defaults:
+  run:
+    working-directory: ./tweet-sentiment
+    
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
