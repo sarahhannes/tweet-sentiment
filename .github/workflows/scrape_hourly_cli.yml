@@ -36,7 +36,8 @@ jobs:
 
       - name: Scrape Hourly - CLI
         run: |
-            twint -s dhl --since [DateTime]::Now.AddHours(-1).ToString('yyyy-MM-dd HH:mm:ss') -o raw_data_cli.txt
+            $since = [DateTime]::Now.AddHours(-1).ToString('yyyy-MM-dd HH:mm:ss')
+            twint -s \#dhl --since $since --hashtags --stats -g -o $since.txt
 
       - name: Commit files
         run: |
