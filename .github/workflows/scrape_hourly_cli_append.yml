@@ -42,7 +42,7 @@ jobs:
       - name: Scrape for new data and append to file
         run: |
             echo "Dynamically get current datetime - 1 hour and save it in `$since variable"
-            $since = [DateTime]::Now.AddHours(-1).ToString('yyyy-MM-dd HH:mm:ss')
+            $since = [DateTime]::Now.AddHours(-3).ToString('yyyy-MM-dd HH:mm:ss')
             echo "Scrape since $since and save scraped output to `$output variable"
             echo "The output should be appended to the same file"
             $output = twint -s \#dhl --since $since --hashtags --stats -l en -o new_data_appended.txt
