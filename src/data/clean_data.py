@@ -5,9 +5,14 @@ import pickle
 import fasttext  # Package for Pre-trained Language Detection Model
 import gdown  # Package to download files form google drive
 
+from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import BernoulliNB
+
 from nltk.stem import WordNetLemmatizer
 import nltk
-
 nltk.download('wordnet')
 wnl = WordNetLemmatizer()
 
