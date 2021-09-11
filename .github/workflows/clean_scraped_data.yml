@@ -32,6 +32,7 @@ jobs:
             python -m pip install --upgrade pip
             pip3 install --user --upgrade git+https://github.com/twintproject/twint.git@origin/master#egg=twint
             pip install nest_asyncio
+            pip install -U scikit-learn
             pip install -r requirements.txt
 
       - name: Run clean_data.py
