@@ -134,4 +134,8 @@ if __name__ == "__main__":
     # 12: Remove redundant columns and reset index
     df = df.drop(columns=['tweet_cleaned', 'language']).reset_index(drop=True)
 
+    # 13: Convert to correct date & time object
+    df['date'] = df['date'].apply(lambda x: pd.to_datetime(x).date())
+    df['time'] = df['time'].apply(lambda x: pd.to_datetime(x).time())
+
     df.to_csv('new_data_cleaned.csv', index=False)
