@@ -5,6 +5,7 @@ import pickle
 import fasttext  # Package for Pre-trained Language Detection Model
 import gdown  # Package to download files form google drive
 
+import sklearn
 from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
