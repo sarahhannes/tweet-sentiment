@@ -71,7 +71,7 @@ if __name__ == "__main__":
     ## Load scraped data (using width delimiter)
     TWITTER_DATA_URL = 'https://raw.githubusercontent.com/SarahHannes/tweet-sentiment/dev/new_data_appended.txt'
     widths = [20, 10, 10, 6, 500]
-    df = pd.read_fwf(TWITTER_DATA_URL, header=None, widths=widths)
+    df = pd.read_fwf(TWITTER_DATA_URL, header=None, widths=widths, encoding="utf8")
 
     ## Load sentiment analysis model
     MODEL_URL = 'https://drive.google.com/uc?id=1ph26IdjXU2aH-1nn3vo0a34GtlRxvDcw'
