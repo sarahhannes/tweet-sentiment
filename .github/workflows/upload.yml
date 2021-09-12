@@ -34,7 +34,7 @@ jobs:
         uses: satackey/action-google-drive@v1
         with:
           skicka-tokencache-json: ${{ secrets.SKICKA_TOKENCACHE_JSON }}
-          upload-from: data.txt
+          upload-from: file1.txt
           upload-to: /tweet-sentiment
 
           # For those who set up Google Drive API client ID and secret themselves
