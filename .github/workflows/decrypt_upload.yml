@@ -1,5 +1,4 @@
-name: Decrypt credentials and overwrite file on Google Drive
-
+name: Overwrite gdrive file
 on: workflow_dispatch
 
 defaults:
@@ -19,4 +18,4 @@ jobs:
           CLIENT_SECRET_PASSPHRASE: ${{ secrets.CLIENT_SECRET_PASSPHRASE }}
       - name: Test overwritting data.txt on Google Drive
         run: |
-            python upload_to_gdrive.py
+            python ./src/data/upload_to_gdrive.py
