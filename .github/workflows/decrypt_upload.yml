@@ -15,7 +15,7 @@ jobs:
 
       - name: Update permission
         run: #git update-index --chmod=+x ./.github/scripts/decrypt_secret.sh
-          chmod +x decrypt_secret.sh
+          chmod +x ./.github/scripts/decrypt_secret.sh
         
       - name: Decrypt encrypted credentials
         run: ./.github/scripts/decrypt_secret.sh
