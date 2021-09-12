@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
-      - name: Reload gpg
-        run: gpg-connect-agent /bye
-        #echo RELOADAGENT | gpg-connect-agent
+#       - name: Reload gpg
+#         run: gpg-connect-agent /bye
+#         #echo RELOADAGENT | gpg-connect-agent
       
       - name: Update permission
         run: git update-index --chmod=+x ./.github/scripts/decrypt_secret.sh
