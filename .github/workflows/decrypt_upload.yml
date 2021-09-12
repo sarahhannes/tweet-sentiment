@@ -8,10 +8,14 @@ defaults:
 
 jobs:
   Upload:
-    name: Upload
+    name: Replace existing file
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Update permission
+        run: git update-index --chmod=+x ./.github/scripts/decrypt_secret.sh
+        
       - name: Decrypt encrypted credentials
         run: ./.github/scripts/decrypt_secret.sh
         env:
