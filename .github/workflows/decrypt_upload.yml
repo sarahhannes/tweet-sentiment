@@ -13,9 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
-#       - name: Reload gpg
-#         run: gpg-connect-agent /bye
-#         #echo RELOADAGENT | gpg-connect-agent
+      - uses: olafurpg/setup-gpg@v3
+      - run: sbt publishSigned
       
       - name: Update permission
         run: git update-index --chmod=+x ./.github/scripts/decrypt_secret.sh
