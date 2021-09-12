@@ -34,6 +34,7 @@ jobs:
             pip install nest_asyncio
             pip install -U scikit-learn
             pip install -r requirements.txt
+            pip install google-api-python-client
 
       - name: Test overwritting data.txt on Google Drive
         run: |
