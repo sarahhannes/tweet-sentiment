@@ -1,4 +1,4 @@
-name: Overwrite gdrive file
+name: Save to gDrive (shell & py)
 on: workflow_dispatch
 
 defaults:
