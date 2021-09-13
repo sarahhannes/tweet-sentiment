@@ -58,7 +58,7 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-CLIENT_SECRET_FILE = sys.argv[1]
+CLIENT_SECRET_FILE = sys.argv[0]
 
 with open(CLIENT_SECRET_FILE, 'rb') as file:
     print('Input file not empty:', b"installed" in file.read(30))
