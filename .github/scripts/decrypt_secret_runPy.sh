@@ -15,5 +15,4 @@ pip install google-api-python-client
 pip install google-auth-oauthlib
 
 # Run upload script
-python3 ./src/data/reformat_cred.py $JSON_OUTPUT
-python3 ./src/data/upload_to_gdrive_sys_argv.py
+python3 ./src/data/upload_to_gdrive_sys_argv.py $JSON_OUTPUT
