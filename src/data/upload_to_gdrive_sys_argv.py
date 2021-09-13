@@ -40,7 +40,8 @@ def Create_Service(client_secret_file, api_name, api_version, *scopes):
         if cred and cred.expired and cred.refresh_token:
             cred.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+            #flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+            flow = InstalledAppFlow.session_from_client_config(CLIENT_SECRET_FILE, scopes)
             cred = flow.run_local_server()
 
         with open(os.path.join(working_dir, token_dir, pickle_file), 'wb') as token:
@@ -62,14 +63,14 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-# CLIENT_SECRET_FILE = sys.argv[0]
+CLIENT_SECRET_FILE = json.loads(sys.argv[0].read())
 # print(sys.argv[0])
-with open(sys.argv[0], 'rb') as file:
-    print('Input file not empty:', b"installed" in file.read(30))
-    print('Found client_id in input file:', b"client_id" in file.read(100))
-    print('Passed file')
-    #pprint.pprint(json.load(file))
-    CLIENT_SECRET_FILE = json.loads(file.read())
+# with open(sys.argv[0], 'rb') as file:
+#     print('Input file not empty:', b"installed" in file.read(30))
+#     print('Found client_id in input file:', b"client_id" in file.read(100))
+#     print('Passed file')
+#     #pprint.pprint(json.load(file))
+#     CLIENT_SECRET_FILE = json.loads(file.read())
 
 API_NAME = 'drive'
 API_VERSION = 'v3'
