@@ -63,12 +63,12 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-print('sys.argv list', [os.fsencode(arg) for arg in sys.argv])
+#print('sys.argv list', [os.fsencode(arg) for arg in sys.argv])
 print('Type of sys.argv[0]:', type(sys.argv[0]))
 print('Type of sys.argv[1]:', type(sys.argv[1]))
 print('The first 100 char for sys.argv[0]:', sys.argv[0][:100])
-print('The first 100 char for sys.argv[1]:', sys.argv[1][:100])
-CLIENT_SECRET_FILE = json.loads(sys.argv[0])
+#print('The first 100 char for sys.argv[1]:', sys.argv[1][:100])
+CLIENT_SECRET_FILE = json.loads(sys.argv[1])
 print('Type after conversion:', sys.argv[0])
 # print(sys.argv[0])
 # with open(sys.argv[0], 'rb') as file:
