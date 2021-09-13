@@ -6,8 +6,9 @@ mkdir $HOME/secrets
 
 # --batch to prevent interactive command
 # --yes to assume "yes" for questions
-JSON_OUTPUT=$(gpg --quiet --batch --yes --passphrase="$CLIENT_SECRET_PASSPHRASE" \
---output $HOME/secrets/client_secret.json -d client_secret.json.gpg)
+#JSON_OUTPUT=$(gpg --quiet --batch --yes --passphrase="$CLIENT_SECRET_PASSPHRASE" \
+#--output $HOME/secrets/client_secret.json -d client_secret.json.gpg)
+JSON_OUTPUT=$(gpg --quiet --batch --yes --passphrase="$CLIENT_SECRET_PASSPHRASE" -d client_secret.json.gpg)
 
 # Install required dependencies for python script
 pip install google-api-python-client
