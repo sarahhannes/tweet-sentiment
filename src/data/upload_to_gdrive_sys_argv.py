@@ -4,10 +4,14 @@ from googleapiclient.http import MediaFileUpload
 import pickle
 import os
 import sys
+import pprint
+import json
+import datetime
 from google_auth_oauthlib.flow import Flow, InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google.auth.transport.requests import Request
+
 
 def Create_Service(client_secret_file, api_name, api_version, *scopes):
     print(client_secret_file, api_name, api_version, scopes, sep='-')
@@ -58,12 +62,14 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-CLIENT_SECRET_FILE = sys.argv[0]
-
-with open(CLIENT_SECRET_FILE, 'rb') as file:
+# CLIENT_SECRET_FILE = sys.argv[0]
+# print(sys.argv[0])
+with open(sys.argv[0], 'rb') as file:
     print('Input file not empty:', b"installed" in file.read(30))
     print('Found client_id in input file:', b"client_id" in file.read(100))
-
+    print('Passed file')
+    #pprint.pprint(json.load(file))
+    CLIENT_SECRET_FILE = json.loads(file.read())
 
 API_NAME = 'drive'
 API_VERSION = 'v3'
