@@ -63,6 +63,7 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
+print('sys.argv list', [os.fsencode(arg)[:100] for arg in sys.argv])
 JSON_OUTPUT = sys.argv[1]
 with codecs.open('client_secret.json', 'w', 'utf8') as f:
     f.write(json.dumps(json.loads(JSON_OUTPUT), sort_keys=True, ensure_ascii=False))
