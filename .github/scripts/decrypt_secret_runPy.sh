@@ -14,4 +14,4 @@ pip install google-api-python-client
 pip install google-auth-oauthlib
 
 # Run upload script
-python3 $HOME/src/data/upload_to_gdrive.py $HOME/secrets/client_secret.json
+python3 ./src/data/upload_to_gdrive.py $HOME/secrets/client_secret.json
