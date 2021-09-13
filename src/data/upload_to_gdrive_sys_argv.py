@@ -64,7 +64,9 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
 
 
 print('Type of sys.argv[0]:', type(sys.argv[0]))
+print('The first 100 char:', sys.argv[0][:100])
 CLIENT_SECRET_FILE = json.loads(sys.argv[0])
+print('Type after conversion:', sys.argv[0])
 # print(sys.argv[0])
 # with open(sys.argv[0], 'rb') as file:
 #     print('Input file not empty:', b"installed" in file.read(30))
