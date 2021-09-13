@@ -4,7 +4,7 @@ from googleapiclient.http import MediaFileUpload
 import pickle
 import os
 import sys
-import pprint
+import codecs
 import json
 import datetime
 from google_auth_oauthlib.flow import Flow, InstalledAppFlow
@@ -61,6 +61,11 @@ def Create_Service(client_secret_file, api_name, api_version, *scopes):
 def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     dt = datetime.datetime(year, month, day, hour, minute, 0).isoformat() + 'Z'
     return dt
+
+
+JSON_OUTPUT = sys.argv[1]
+with codecs.open('client_secret.json', 'w', 'utf8') as f:
+    f.write(json.dumps(json.loads(JSON_OUTPUT), sort_keys=True, ensure_ascii=False))
 
 CLIENT_SECRET_FILE = 'client_secret.json'
 API_NAME = 'drive'
