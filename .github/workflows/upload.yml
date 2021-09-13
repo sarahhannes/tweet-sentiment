@@ -1,32 +1,19 @@
 name: Upload to Google Drive
 
 on:
-  # Triggers the workflow on push or pull request events but only for the dev branch
-#   push:
-#     branches: [ dev ]
-#   pull_request:
-#     branches: [ dev ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   Upload:
+    name: Replace existing file
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
-      - run: |
-          skicka ls
-          skicka ls -no-browser-auth
-          
-      - name: Upload to Google Drive
-        uses: satackey/action-google-drive@v1
-        with:
-          skicka-tokencache-json: ${{ secrets.SKICKA_TOKENCACHE_JSON }}
-          upload-from: file1.txt
-          upload-to: /tweet-sentiment/data.txt
 
-          # For those who set up Google Drive API client ID and secret themselves
+      - uses: mkrakowitzer/actions-googledrive@master
+        with:
+          upload-from: file1.txt
+          upload-to: IRL-L2-Support/platform-architecture-docs
+          skicka-tokencache-json: ${{ secrets.SKICKA_TOKENCACHE_JSON }}
           google-client-id: ${{ secrets.GOOGLE_CLIENT_ID }}
           google-client-secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
