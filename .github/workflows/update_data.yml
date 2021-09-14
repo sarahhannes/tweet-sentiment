@@ -32,15 +32,13 @@ jobs:
             python -m pip install --upgrade pip
             pip install -r requirements.txt
 
-      - name: Fetch secrets
+      - name: Run update.py
         env:
           GOOGLEDRIVE_ACCESS_TOKEN: ${{ secrets.GOOGLEDRIVE_ACCESS_TOKEN }}
           GOOGLEDRIVE_CLIENT_ID: ${{ secrets.GOOGLEDRIVE_CLIENT_ID }}
           GOOGLEDRIVE_CLIENT_SECRET: ${{ secrets.GOOGLEDRIVE_CLIENT_SECRET }}
           GOOGLEDRIVE_REFRESH_TOKEN: ${{ secrets.GOOGLEDRIVE_REFRESH_TOKEN }}
           UPDATE_FILENAME: ${{ 'data.txt' }}
-
-      - name: Run update.py
         run: |
             python pipeline/update.py
 
