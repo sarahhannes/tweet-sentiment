@@ -73,14 +73,16 @@ def get_hashtags(tweet):
 
 
 if __name__ == "__main__":
+
     ### LOAD ###
     ## Load scraped data (using width delimiter)
-    TWITTER_DATA_URL = 'https://raw.githubusercontent.com/SarahHannes/tweet-sentiment/dev/new_data_appended.txt'
+    NEWDATA_URL = 'https://raw.githubusercontent.com/SarahHannes/tweet-sentiment/dev/new_data_appended.txt'
     widths = [20, 10, 10, 6, 500]
-    df = pd.read_fwf(TWITTER_DATA_URL, header=None, widths=widths, encoding="utf8")
+    df = pd.read_fwf(NEWDATA_URL, header=None, widths=widths, encoding="utf8")
 
     ## Load sentiment analysis model
-    MODEL_URL = 'https://drive.google.com/uc?id=1ph26IdjXU2aH-1nn3vo0a34GtlRxvDcw'
+    MODEL_FILEID = '1ydeM6Tiamck5sF8oMDThZIRb0xQu7Nqd'
+    MODEL_URL = 'https://drive.google.com/uc?id=' + MODEL_FILEID
     MODEL_OUTPUT = 'model.pickle'
     # Download model from google drive
     gdown.download(MODEL_URL, MODEL_OUTPUT, quiet=False)
@@ -90,7 +92,8 @@ if __name__ == "__main__":
     infile.close()
 
     ## Load fastText pre-trained language detection model
-    FASTTEXT_URL = 'https://drive.google.com/uc?id=1CiRXBTrLKwigglcUds1daLPPUFzi4cug'
+    FASTTEXT_FILE_ID = '12JgI89VS7Pkn2akgAs7ZsPFni5HtLvxs'
+    FASTTEXT_URL = 'https://drive.google.com/uc?id=' + FASTTEXT_FILE_ID
     FASTTEXT_OUTPUT = 'lid.176.ftz'
     # Download model from google drive
     gdown.download(FASTTEXT_URL, FASTTEXT_OUTPUT, quiet=False)
