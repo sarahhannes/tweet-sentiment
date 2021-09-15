@@ -1,1 +1,2 @@
-this is data.txt from git repository root
+username	tweet	replies	retweets	likes	hashtags	link	tweet_id	polarity	date	time
+this	is	existing	data	from	git	repo	saved	as	data.txt	xxx
