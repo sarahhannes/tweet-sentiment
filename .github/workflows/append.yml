@@ -1,4 +1,4 @@
-name: Append data
+name: Append
 
 on:
   push:
