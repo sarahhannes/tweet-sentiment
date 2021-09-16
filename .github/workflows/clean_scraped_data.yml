@@ -1,9 +1,9 @@
-name: Clean scraped data
+name: Clean
 
-on: workflow_dispatch
-#   push:
-#     paths:
-#       - '**.txt'
+on: #workflow_dispatch
+  push:
+    paths:
+      - 'new_data_appended.txt'
 
 defaults:
   run:
