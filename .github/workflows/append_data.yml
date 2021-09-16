@@ -1,9 +1,9 @@
-name: Append new & existing data
+name: Append data
 
-on: workflow_dispatch
-#   push:
-#     paths:
-#       - '**.txt'
+on:
+  push:
+    paths:
+      - new_data_cleaned.csv
 
 defaults:
   run:
@@ -12,7 +12,7 @@ defaults:
 
 jobs:
 
-  Cleaning:
+  Appending:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
