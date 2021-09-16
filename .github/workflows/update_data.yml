@@ -42,6 +42,21 @@ jobs:
         run: |
             python pipeline/update.py
 
+      - name: Remove file1.txt
+        uses: JesseTG/rm@v1.0.0
+        with:
+          path: ./file1.txt
+          
+#       - name: Remove new_data_cleaned.csv
+#         uses: JesseTG/rm@v1.0.0
+#         with:
+#           path: ./new_data_cleaned.csv
+
+#       - name: Remove data.txt
+#         uses: JesseTG/rm@v1.0.0
+#         with:
+#           path: ./data.txt
+
       - name: Commit files
         run: |
           git config --global user.email "siti.sarah.a.hannes@gmail.com"
