@@ -1,5 +1,4 @@
 name: Scrape
-#on: workflow_dispatch # manual trigger (for now)
 on:
   schedule:
     # Runs "at minute 0 every hour" (see https://crontab.guru)
@@ -12,7 +11,7 @@ defaults:
     
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # This workflow contains a single job called "Scraping"
   Scraping:
     # The type of runner that the job will run on
     runs-on: windows-latest
