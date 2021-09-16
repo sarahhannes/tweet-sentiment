@@ -1,6 +1,6 @@
 name: Clean
 
-on: #workflow_dispatch
+on:
   push:
     paths:
       - new_data_appended.txt
