@@ -1,0 +1,178 @@
+name: Scrape - Clean - Append - Update Data
+on:
+  schedule:
+    - cron: '35 * * * *'
+
+defaults:
+  run:
+    working-directory: .
+
+jobs:
+  Scraping:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+          timezoneMacos: "Asia/Singapore"
+          timezoneWindows: "Singapore Standard Time"
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - name: Scrape for new data and append to file
+        run: |
+            echo "Dynamically get current datetime - 2 hour and save it in `$since variable"
+            $since = [DateTime]::Now.AddHours(-2).ToString('yyyy-MM-dd HH:mm:ss')
+            echo "Scrape since $since and save scraped output to `$output variable"
+            echo "The output should be appended to the same file"
+            $output = twint -s \#dhl --since $since --hashtags --stats -l en -o new_data_appended.txt
+            echo "Printing out the output to console"
+            $output
+
+      - name: Commit files
+        run: |
+          git config --global user.email "siti.sarah.a.hannes@gmail.com"
+          git config --global user.name "Sarah Hannes"
+          git pull
+          git add .
+          git commit -m "Scrape using GH Action $(date)"
+          git push --set-upstream origin dev
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
+  
+  Cleaning:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+          timezoneMacos: "Asia/Singapore"
+          timezoneWindows: "Singapore Standard Time"
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - name: Run clean.py
+        run: |
+            python pipeline/clean.py
+
+      - name: Commit files
+        run: |
+          git config --global user.email "siti.sarah.a.hannes@gmail.com"
+          git config --global user.name "Sarah Hannes"
+          git pull
+          git add .
+          git commit -m "Clean scraped data using GH Action $(date)"
+          git push --set-upstream origin dev
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
+          
+  Appending:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+          timezoneMacos: "Asia/Singapore"
+          timezoneWindows: "Singapore Standard Time"
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+      - name: Run append.py
+        run: |
+            python pipeline/append.py
+
+      - name: Commit files
+        run: |
+          git config --global user.email "siti.sarah.a.hannes@gmail.com"
+          git config --global user.name "Sarah Hannes"
+          git pull
+          git add .
+          git commit -m "Append new & existing data using GH Action $(date)"
+          git push --set-upstream origin dev
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
+  
+  Updating_data:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+          timezoneMacos: "Asia/Singapore"
+          timezoneWindows: "Singapore Standard Time"
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+      - name: Run update.py
+        env:
+          GOOGLEDRIVE_ACCESS_TOKEN: ${{ secrets.GOOGLEDRIVE_ACCESS_TOKEN }}
+          GOOGLEDRIVE_CLIENT_ID: ${{ secrets.GOOGLEDRIVE_CLIENT_ID }}
+          GOOGLEDRIVE_CLIENT_SECRET: ${{ secrets.GOOGLEDRIVE_CLIENT_SECRET }}
+          GOOGLEDRIVE_REFRESH_TOKEN: ${{ secrets.GOOGLEDRIVE_REFRESH_TOKEN }}
+          UPDATE_FILENAME: ${{ 'data.txt' }}
+        run: |
+            python pipeline/update.py
+      - name: Remove new_data_appended.txt
+        uses: JesseTG/rm@v1.0.0
+        with:
+          path: ./new_data_appended.txt
+          
+      - name: Remove new_data_cleaned.csv
+        uses: JesseTG/rm@v1.0.0
+        with:
+          path: ./new_data_cleaned.csv
+
+      - name: Remove data.txt
+        uses: JesseTG/rm@v1.0.0
+        with:
+          path: ./data.txt
+
+      - name: Commit files
+        run: |
+          git config --global user.email "siti.sarah.a.hannes@gmail.com"
+          git config --global user.name "Sarah Hannes"
+          git pull
+          git add .
+          git commit -m "Updated Google Drive using GH Action $(date)"
+          git push --set-upstream origin dev
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
