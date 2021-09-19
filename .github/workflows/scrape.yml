@@ -1,8 +1,8 @@
 name: Scrape
-on: workflow_dispatch
-#   schedule:
-#     # Runs "at minute 0 every hour" (see https://crontab.guru)
-#     - cron: '0 * * * *'
+on:
+  schedule:
+    # Runs "at minute 0 every hour" (see https://crontab.guru)
+    - cron: '30 * * * *'
 
 defaults:
   run:
@@ -55,5 +55,5 @@ jobs:
           git commit -m "Scrape using GH Action $(date)"
           git push --set-upstream origin dev
         env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
+          REPO_KEY: ${{secrets.PERSONAL_TOKEN}}
+          username: SarahHannes #github-actions
