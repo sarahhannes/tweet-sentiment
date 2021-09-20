@@ -55,7 +55,12 @@ jobs:
       - name: Remove data.txt
         uses: JesseTG/rm@v1.0.0
         with:
-          path: ./data.txt
+          path: ./lid.176.ftz
+      
+      - name: Remove data.txt
+        uses: JesseTG/rm@v1.0.0
+        with:
+          path: ./model.pickle
 
       - name: Commit files
         run: |
