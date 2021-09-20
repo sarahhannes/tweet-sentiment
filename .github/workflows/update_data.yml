@@ -16,6 +16,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token during push.
+          fetch-depth: 0
+
       - uses: szenius/set-timezone@v1.0
         with:
           timezoneLinux: "Asia/Singapore"
@@ -69,7 +73,13 @@ jobs:
           git pull
           git add .
           git commit -m "Updated Google Drive using GH Action $(date)"
-          git push --set-upstream origin dev
         env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
+          REPO_KEY: ${{secrets.PAT}}
+          username: SarahHannes
+      
+      - name: GitHub Push
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{secrets.PAT}}
+          branch: dev
+          directory: .
