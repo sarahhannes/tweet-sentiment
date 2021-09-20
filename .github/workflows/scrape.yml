@@ -57,7 +57,6 @@ jobs:
           git pull
           git add .
           git commit -m "Scrape using GH Action $(date)"
-          git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.PAT}}
           username: SarahHannes #github-actions
