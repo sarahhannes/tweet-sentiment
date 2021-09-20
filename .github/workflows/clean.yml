@@ -48,7 +48,7 @@ jobs:
           git add .
           git commit -m "Clean scraped data using GH Action $(date)"
         env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          REPO_KEY: ${{secrets.PAT}}
           username: github-actions
           
       - name: GitHub Push
