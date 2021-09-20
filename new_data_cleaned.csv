@@ -1,2 +1,3 @@
 tweet_id,date,time,username,link,tweet,replies,retweets,likes,hashtags,polarity
-1439788617589612545,2021-09-20,11:08:51,TMReserve,https://twitter.com/TMReserve/status/1439788617589612545,"#DHL announces 4.9 percent #price hike effective 2022  https://t.co/KlD0UOLHru  #TMRNews DHL,price,TMRNews",0,0,0,"['DHL', 'price', 'TMRNews']",1
+1439788617589612545,2021-09-20,11:08:51,TMReserve,https://twitter.com/TMReserve/status/1439788617589612545,"#DHL announces 4.9 percent #price hike effective 2022  https://t.co/KlD0UOLHru  #TMRNews DHL,price,TMRNews",0,0,0,"['TMRNews', 'price', 'DHL']",1
+1439832285268770819,2021-09-20,14:02:22,UtkSrvstv,https://twitter.com/UtkSrvstv/status/1439832285268770819,"@DHLExpressIndia 1. Saurabh Tiwari 2. Trent Boult  3. Jasprit Bumrah  #DHLMatchKeStars #DHL #MumbaiIndians #Contest @DHLExpressIndia   Join @rekha__k @Subho_Live @ChinmayK15 DHLMatchKeStars,DHL,MumbaiIndians,Contest",0,0,0,"['DHLMatchKeStars', 'DHL', 'MumbaiIndians', 'Contest']",1
