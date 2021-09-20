@@ -16,6 +16,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token during push.
+          fetch-depth: 0
+          
       - uses: szenius/set-timezone@v1.0
         with:
           timezoneLinux: "Asia/Singapore"
@@ -47,3 +51,10 @@ jobs:
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
+          
+      - name: GitHub Push
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{secrets.PAT}}
+          branch: dev
+          directory: .
