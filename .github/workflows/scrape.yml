@@ -1,8 +1,8 @@
 name: Scrape
-on:
-  schedule:
-    # Runs "at minute 0 every hour" (see https://crontab.guru)
-    - cron: '20 * * * *'
+on: workflow_dispatch
+#   schedule:
+#     # Runs "at minute 0 every hour" (see https://crontab.guru)
+#     - cron: '20 * * * *'
 
 defaults:
   run:
