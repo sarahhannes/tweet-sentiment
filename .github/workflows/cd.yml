@@ -82,7 +82,7 @@ jobs:
           git config --global user.name "Sarah Hannes"
           git pull
           git add .
-          git commit -m "Clean scraped data using GH Action $(date)"
+          git commit -m "Clean data using GH Action $(date)"
           git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
@@ -118,7 +118,7 @@ jobs:
           git config --global user.name "Sarah Hannes"
           git pull
           git add .
-          git commit -m "Append new & existing data using GH Action $(date)"
+          git commit -m "Append data using GH Action $(date)"
           git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
@@ -171,7 +171,7 @@ jobs:
           git config --global user.name "Sarah Hannes"
           git pull
           git add .
-          git commit -m "Updated Google Drive using GH Action $(date)"
+          git commit -m "Update Google Drive using GH Action $(date)"
           git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
