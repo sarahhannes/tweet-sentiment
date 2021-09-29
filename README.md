@@ -1,5 +1,6 @@
 Twitter Sentiment Analysis
 ==============================
+[![Run on Repl.it](https://repl.it/badge/github/SarahHannes/tweet-sentiment)](https://repl.it/github/SarahHannes/tweet-sentiment)
 
 A Python based project for performing sentiment analysis on Twitter data.
 work in progress..
