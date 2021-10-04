@@ -41,11 +41,9 @@ jobs:
 
       - name: Commit files
         run: |
-          git config --global user.email "siti.sarah.a.hannes@gmail.com"
-          git config --global user.name "Sarah Hannes"
           git pull
           git add .
-          git commit -m "Scrape using GH Action $(date)"
+          git commit -m "GH Action - Scrape new data $(date)"
           git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
@@ -79,11 +77,9 @@ jobs:
 
       - name: Commit files
         run: |
-          git config --global user.email "siti.sarah.a.hannes@gmail.com"
-          git config --global user.name "Sarah Hannes"
           git pull
           git add .
-          git commit -m "Clean data using GH Action $(date)"
+          git commit -m "GH Action - Clean new data $(date)"
           git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
@@ -127,11 +123,9 @@ jobs:
           
       - name: Commit files
         run: |
-          git config --global user.email "siti.sarah.a.hannes@gmail.com"
-          git config --global user.name "Sarah Hannes"
           git pull
           git add .
-          git commit -m "Append data using GH Action $(date)"
+          git commit -m "GH Action - Append new data $(date)"
           git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
@@ -172,11 +166,9 @@ jobs:
 
       - name: Commit files
         run: |
-          git config --global user.email "siti.sarah.a.hannes@gmail.com"
-          git config --global user.name "Sarah Hannes"
           git pull
           git add .
-          git commit -m "Update Google Drive using GH Action $(date)"
+          git commit -m "GH Action - Update data on GDrive $(date)"
           git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
