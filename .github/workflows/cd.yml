@@ -41,6 +41,8 @@ jobs:
 
       - name: Commit files
         run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git pull
           git add .
           git commit -m "GH Action - Scrape new data $(date)"
@@ -77,6 +79,8 @@ jobs:
 
       - name: Commit files
         run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git pull
           git add .
           git commit -m "GH Action - Clean new data $(date)"
@@ -123,6 +127,8 @@ jobs:
           
       - name: Commit files
         run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git pull
           git add .
           git commit -m "GH Action - Append new data $(date)"
@@ -166,6 +172,8 @@ jobs:
 
       - name: Commit files
         run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git pull
           git add .
           git commit -m "GH Action - Update data on GDrive $(date)"
