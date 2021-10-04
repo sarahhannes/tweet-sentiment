@@ -46,16 +46,10 @@ jobs:
           git pull
           git add .
           git commit -m "GH Action - Scrape new data $(date)"
-#          git push --set-upstream origin dev
+          git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
-          
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: dev
   
   Clean:
     needs: Scrape
@@ -90,16 +84,10 @@ jobs:
           git pull
           git add .
           git commit -m "GH Action - Clean new data $(date)"
-#          git push --set-upstream origin dev
+          git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
-      
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: dev
           
   Append:
     needs: Clean
@@ -144,16 +132,10 @@ jobs:
           git pull
           git add .
           git commit -m "GH Action - Append new data $(date)"
-#          git push --set-upstream origin dev
+          git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
-          
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: dev
   
   Update_data:
     needs: Append
@@ -195,13 +177,7 @@ jobs:
           git pull
           git add .
           git commit -m "GH Action - Update data on GDrive $(date)"
-#          git push --set-upstream origin dev
+          git push --set-upstream origin dev
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: dev
