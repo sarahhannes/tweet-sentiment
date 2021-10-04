@@ -51,17 +51,11 @@ jobs:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
           
-      - name: action-push
-        # You may pin to the exact commit or the version.
-        # uses: ludeeus/action-push@0b7c1175655379c008f42bbaf524caa79cf89ec1
-        uses: ludeeus/action-push@0.0.1
-        env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
-          ACTION_MAIL: "octocat@octocat.org"
-          ACTION_NAME: "octocat"
-          ACTION_BRANCH: "dev"
-          ACTION_MESSAGE: "Action commit"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev
   
   Clean:
     needs: Scrape
@@ -101,17 +95,11 @@ jobs:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
       
-      - name: action-push
-        # You may pin to the exact commit or the version.
-        # uses: ludeeus/action-push@0b7c1175655379c008f42bbaf524caa79cf89ec1
-        uses: ludeeus/action-push@0.0.1
-        env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
-          ACTION_MAIL: "octocat@octocat.org"
-          ACTION_NAME: "octocat"
-          ACTION_BRANCH: "dev"
-          ACTION_MESSAGE: "Action commit"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev
           
   Append:
     needs: Clean
@@ -161,17 +149,11 @@ jobs:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
           
-      - name: action-push
-        # You may pin to the exact commit or the version.
-        # uses: ludeeus/action-push@0b7c1175655379c008f42bbaf524caa79cf89ec1
-        uses: ludeeus/action-push@0.0.1
-        env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
-          ACTION_MAIL: "octocat@octocat.org"
-          ACTION_NAME: "octocat"
-          ACTION_BRANCH: "dev"
-          ACTION_MESSAGE: "Action commit"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev
   
   Update_data:
     needs: Append
@@ -218,14 +200,8 @@ jobs:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
 
-      - name: action-push
-        # You may pin to the exact commit or the version.
-        # uses: ludeeus/action-push@0b7c1175655379c008f42bbaf524caa79cf89ec1
-        uses: ludeeus/action-push@0.0.1
-        env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
-          ACTION_MAIL: "octocat@octocat.org"
-          ACTION_NAME: "octocat"
-          ACTION_BRANCH: "dev"
-          ACTION_MESSAGE: "Action commit"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev
