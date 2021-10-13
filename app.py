@@ -1,0 +1,974 @@
+import os
+#from os import path
+#from time import sleep
+from datetime import datetime, date
+from datetime import timedelta
+import datetime
+import re
+
+from google.oauth2 import service_account
+from gspread_pandas import Spread, Client
+from bokeh.models import ColumnDataSource, CustomJS
+from bokeh.models import DataTable, TableColumn, HTMLTemplateFormatter, DateFormatter
+from streamlit_bokeh_events import streamlit_bokeh_events
+from wordcloud import WordCloud
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import altair as alt
+import streamlit as st
+import gdown
+import gspread
+
+
+# Global config ---------------------------------------------------------------
+
+st.set_page_config(page_title='Twitter Watcher', layout='wide', page_icon='📮')
+
+
+# -----------------------------------------------------------------------------
+
+
+
+def red_color_func(word, font_size, position, orientation, random_state=0, **kwargs):
+    """
+    
+
+    Parameters
+    ----------
+    word : TYPE
+        DESCRIPTION.
+    font_size : TYPE
+        DESCRIPTION.
+    position : TYPE
+        DESCRIPTION.
+    orientation : TYPE
+        DESCRIPTION.
+    random_state : TYPE, optional
+        DESCRIPTION. The default is 0.
+    **kwargs : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    str
+        Function to be used for.
+
+    """
+    return "hsl(6, 78%, 57%)"
+
+
+def green_color_func(word, font_size, position, orientation, random_state=0, **kwargs):
+    return "hsl(154, 55%, 66%)"
+
+
+def get_weekstart():
+    """
+    Get date of week start
+
+    Returns
+    -------
+    datetime.date
+        Date, Monday of the current week.
+
+    """
+    today = datetime.date.today()
+    return today - timedelta(days=today.weekday())
+
+
+class FileReference:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get_modifiedtime(self):
+        return os.path.getmtime(self)
+
+def hash_file_reference(file_reference):
+    filename = file_reference.filename
+    return (filename, os.path.getmtime(filename))
+
+
+
+@st.cache(hash_funcs={FileReference: hash_file_reference})
+def load_data():
+    """
+    Get the latest data
+
+    Returns
+    -------
+    pandas dataframe
+        Latest data.
+
+    """
+    # TODO: change to directly download from google drive instead of github
+    filename = 'https://raw.githubusercontent.com/SarahHannes/tweet-sentiment/dev/data.txt'
+    file = FileReference(filename)
+    df = pd.read_csv(file.filename, sep='\t')
+    return clean_df(df)
+
+
+#@st.cache(hash_funcs={FileReference: hash_file_reference})
+def load_data_gdrive():
+    DATA_FILE_ID = '1XiABfco1-NpSwSjl32BAUS_HqPrBFYzD'
+    DATA_URL = 'https://drive.google.com/uc?id=' + DATA_FILE_ID
+    DATA_OUTPUT = 'data.txt'
+    # Download model from google drive
+    gdown.download(DATA_URL, DATA_OUTPUT, quiet=True)
+    
+    file = FileReference(DATA_OUTPUT)
+    df = pd.read_csv(file.filename, sep='\t')
+    return clean_df(df)
+
+def clean_df(df):
+    """
+    Clean and pre-process dataframe by:
+        - Transforming columns to appropriate format
+        - Derive additional columns such as day_of_week from date
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Raw dataframe.
+
+    Returns
+    -------
+    df : pandas dataframe
+        Preprocessed dataframe.
+
+    """
+    # Transform date column to pandas._libs.tslibs.timestamps.Timestamp format
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
+    # Transform time column to datetime.time format
+    df['time'] = pd.to_datetime(df['time'], format='%H:%M:%S').dt.time
+    # Combine columns to get datetime
+    df['datetime'] = df.apply(lambda row: datetime.datetime.combine(row['date'], row['time']), axis=1)
+    # Get year
+    df['year'] = df['date'].apply(lambda x: x.year)
+    # Get month
+    df['month'] = df['date'].apply(lambda x: x.month_name())
+    # Get week number
+    df['week'] = df['date'].dt.isocalendar().week
+    # Get day of the week
+    df['day_of_week'] = df['date'].apply(lambda x: x.day_name())
+    # Get hour in 24h format
+    df['hour'] = df['time'].apply(lambda x: x.hour)
+    # Transform polarity column
+    df['polarity'] = df['polarity'].apply(lambda x: 'positive' if x == 1 else 'negative')
+    return df
+
+
+def get_dhl_acc(df):
+    """
+    Extract list of Twitter account associated with DHL
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Tweets data.
+
+    Returns
+    -------
+    dhl_acc : list
+        List of Twitter account usernames associated with DHL.
+
+    """
+    dhl_acc = list(set(df['username'].str.extract('(.*DHL.*)', re.IGNORECASE)[0]))
+    dhl_acc.remove(np.nan)
+    return dhl_acc
+
+
+def get_dhl_tweet(df, dhl_acc):
+    """
+    Get Tweets by DHL associated accounts
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Tweets data.
+    dhl_acc : list
+        List of Twitter account usernames associated with DHL.
+
+    Returns
+    -------
+    pandas dataframe
+        Filtered dataframe containing only Tweets by DHL associated accounts.
+
+    """
+    return df[df['username'].isin(dhl_acc)].reset_index(drop=True)
+
+
+def get_cust_tweet(df, dhl_acc):
+    """
+    Get Tweets by Twitter users
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Tweets data.
+    dhl_acc : list
+        List of Twitter account usernames associated with DHL.
+
+    Returns
+    -------
+    pandas dataframe
+        Filtered dataframe containing only Tweets by general Twitter users (ie possibly DHL customers).
+
+    """
+    return df[~df['username'].isin(dhl_acc)].reset_index(drop=True)
+
+
+# does not slice for date filter
+@st.cache(persist=True)
+def hashtags_polarity2(df):
+    positive_df = df[df['polarity'] == 'positive'].copy()
+    negative_df = df[df['polarity'] == 'negative'].copy()
+    positive_list = positive_df['hashtags'].apply(
+        lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
+    negative_list = negative_df['hashtags'].apply(
+        lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
+    return (' ').join([item for sublist in positive_list for item in sublist]), (' ').join(
+        [item for sublist in negative_list for item in sublist])
+
+
+# slice for date filter
+@st.cache(persist=True)
+def hashtags_polarity(df, selected_week):
+    # unpack year, weeknum and day from selected date
+    cw_year, cw_weeknum, cw_day = selected_week.isocalendar()
+
+    # slice df based on selected date and polarity, then save as new df
+    positive_df = df.loc[(df['week'] == cw_weeknum) & (df['year'] == cw_year) & (df['polarity'] == 'positive')].copy()
+    negative_df = df.loc[(df['week'] == cw_weeknum) & (df['year'] == cw_year) & (df['polarity'] == 'negative')].copy()
+
+    if len(positive_df) == 0:  # if either one is empty df, then show the most recent data
+        top2_weeknum = df['week'].unique()[-2]
+        max_year = max(df['year'])
+
+        # slice to get the most recent week -1, year
+        positive_df = df.loc[
+            (df['week'] == top2_weeknum) & (df['year'] == max_year) & (df['polarity'] == 'positive')].copy()
+
+    if len(negative_df) == 0:
+        top2_weeknum = df['week'].unique()[-2]
+        max_year = max(df['year'])
+        negative_df = df.loc[
+            (df['week'] == top2_weeknum) & (df['year'] == max_year) & (df['polarity'] == 'negative')].copy()
+    # get hashtags
+    positive_list = positive_df['hashtags'].apply(
+        lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
+    negative_list = negative_df['hashtags'].apply(
+        lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
+
+    # join words
+    positive_words = (' ').join([item for sublist in positive_list for item in sublist])
+    negative_words = (' ').join([item for sublist in negative_list for item in sublist])
+
+    return positive_words, negative_words
+
+
+
+# return delta in direct value differences
+# in case of requested data is not available, automatically show the latest kpi
+@st.cache(persist=True)
+def get_kpi(weekly_data, selected_week):
+    """
+    Returns KPI value and delta for all 6 KPIs.
+
+    Parameters
+    ----------
+    weekly_data : pandas.core.frame.DataFrame
+        Pivoted dataframe with sum aggregation for week, year index.
+    selected_week : datetime.date
+        Selected date from user input.
+
+    Returns
+    -------
+    kpi_dict : dict
+        Dictionary containing kpi_name: (current week's value, current week's value - previous week's value) for all 6 KPIs.
+    warning : str
+        String storing warning to display, if any.
+
+    """
+    # Reset index to perform transformation
+    weekly_data2 = weekly_data.reset_index()
+    # Change from str type -> int to enable slicing later
+    weekly_data2['year'] = weekly_data2['year'].apply(lambda x: int(x[:-2]))
+    weekly_data2['week'] = weekly_data2['week'].apply(lambda x: int(x))
+    # Set back index to week, year
+    weekly_data2 = weekly_data2.set_index(['week', 'year'])
+    # Initialize empty dict to store kpi with format -> kpi_name: (current week value, delta)
+    kpi_dict = {}
+
+    try:
+        current_week = selected_week
+        previous_week = selected_week - timedelta(days=7)
+        cw_year, cw_weeknum, cw_day = current_week.isocalendar()
+        pw_year, pw_weeknum, pw_day = previous_week.isocalendar()
+
+        for key, column_name in [('Positive Mentions', 'polarity_positive_mentions'),
+                                 ('Negative Mentions', 'polarity_negative_mentions'),
+                                 ('Retweets', 'retweets'),
+                                 ('Replies', 'replies'),
+                                 ('Likes', 'likes'),
+                                 ('DHL Tweets', 'count_dhl_tweets')]:
+            current_value = int(weekly_data2.at[(cw_weeknum, cw_year), column_name])
+            prev_value = int(weekly_data2.at[(pw_weeknum, pw_year), column_name])
+            kpi_dict[key] = (current_value, current_value - prev_value)
+
+        warning = ""
+
+    except KeyError as e:  # data does not exist
+        warning = f'Data is not available for week, year {e}. Showing the most recent KPI'
+        weekly_data = weekly_data.sort_index()  # sort index ascendingly
+        (cw_weeknum, cw_year), (pw_weeknum, pw_year) = weekly_data.index.take([-1, -2])  # get the 2 latest weeknum, year available
+
+        for key, column_name in [('Positive Mentions', 'polarity_positive_mentions'),
+                                 ('Negative Mentions', 'polarity_negative_mentions'),
+                                 ('Retweets', 'retweets'),
+                                 ('Replies', 'replies'),
+                                 ('Likes', 'likes'),
+                                 ('DHL Tweets', 'count_dhl_tweets')]:
+            current_value = int(weekly_data2.at[(cw_weeknum, cw_year), column_name])
+            prev_value = int(weekly_data2.at[(pw_weeknum, pw_year), column_name])
+            kpi_dict[key] = (current_value, current_value - prev_value)
+
+    return kpi_dict, warning
+
+# @st.cache(persist=True)
+def get_datatable(df, selected_week):
+    week_start = selected_week
+    week_end = selected_week + timedelta(days=7)
+
+    # sort by datetime
+    df = df.sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
+
+    # a workaround to ensure that time is always rendered in correct format
+    df['time'] = df['time'].apply(lambda x: str(x))
+
+    # slice for date filter
+    filtered_df = df[
+        (df['date'] >= np.datetime64(week_start)) & (df['date'] <= np.datetime64(week_end))].copy().reset_index()
+
+    # exception catching. if sliced df is empty, get the latest week available
+    if len(filtered_df) == 0:
+        week_end = max(df['date'])
+        week_start = week_end - timedelta(days=7)
+
+        filtered_df = df[
+            (df['date'] >= np.datetime64(week_start)) & (df['date'] <= np.datetime64(week_end))].copy().reset_index()
+
+    # return df
+    return filtered_df[['datetime', 'date', 'time', 'polarity', 'tweet', 'link']].sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
+    # return filtered_df.sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
+
+
+def load_google_worksheet(worksheet):
+    # get all rows from the worksheet
+    return pd.DataFrame(worksheet.get_all_records())
+
+
+def update_google_worksheet(worksheet, df):
+    # Get column names
+    column_name = df.columns.values.tolist()
+    # Get value to append to worksheet
+    row_value = df.values.tolist()
+    # Update worksheet
+    worksheet.update([column_name] + row_value)
+
+
+def connect_googlesheet(googlesheet_name):
+    # Create a connection object
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"])
+
+    # Get google sheet url from secrets
+    sheet_url = st.secrets["private_gsheets_url"]
+
+    # Initialize a Client instance and authorize to access spreadsheets via Google Sheets API (via OAuth2 credentials)
+    # ref: https://docs.gspread.org/en/latest/api.html#gspread.authorize
+    gc = gspread.authorize(credentials)
+
+    # Open the google sheet
+    sh = gc.open_by_url(sheet_url)
+
+    # Open the worksheet
+    worksheet = sh.worksheet(title=googlesheet_name)
+    # Create an instance of Client class to comunicate with Google API
+    # ref: https://gspread-pandas.readthedocs.io/en/latest/gspread_pandas.html#gspread_pandas.client.Client
+    client = Client(creds=credentials)
+
+    # Create an instance of Spread class to interact with Google spreadsheet using Pandas
+    # ref: https://gspread-pandas.readthedocs.io/en/latest/gspread_pandas.html#gspread_pandas.spread.Spread
+    spread = Spread(spread=sheet_url, client=client)
+    return worksheet, spread
+
+
+def update_googlesheet_gspread_pandas(spread, googlesheet_name, df):
+    col = ['datetime', 'tweet', 'polarity', 'user_input_timestamp']
+    spread.df_to_sheet(df[col], sheet=googlesheet_name, index=False)
+
+
+def polarity_formatter(my_col):
+    template = """
+        <div style="background:<%= 
+            (function colorfromint(){
+                if(result_col == 'positive')
+                {return('#84ddb4')}
+                else if (result_col == 'negative')
+                    {return('#e74d3c')}
+                }()) %>; 
+            color: white"> 
+            <p style="text-align:center;">
+            <%= value %></p>
+        </div>
+    """.replace('result_col', my_col)
+    return HTMLTemplateFormatter(template=template)
+
+
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
+
+def get_agg_data(cust_tweets, dhl_tweets):
+    # Get polarity data from cust_tweets
+    # Get one-hot encoded columns for 'polarity'
+    sum_polarity = pd.concat([pd.get_dummies(cust_tweets[['datetime', 'year', 'polarity']]), cust_tweets[['week']]], axis=1).add_suffix('_mentions')
+    
+    # Add count for each tweets
+    sum_polarity['count_cust_tweets'] = 1
+    
+    # Ensure that columns exist
+    if 'polarity_positive_mentions' not in sum_polarity.columns:
+        sum_polarity['polarity_positive_mentions'] = sum_polarity['polarity_negative_mentions'].apply(lambda x: 0 if x==1 else np.nan)
+    if 'polarity_negative_mentions' not in sum_polarity.columns:
+        sum_polarity['polarity_negative_mentions'] = sum_polarity['polarity_positive_mentions'].apply(lambda x: 0 if x==1 else np.nan)
+    
+    # Get engagement data from dhl_tweets
+    # Slice dataframe to get only engagement details
+    sum_engagement = dhl_tweets[['datetime', 'week', 'year', 'replies', 'retweets', 'likes']].copy()
+    # Add count for each tweets
+    sum_engagement['count_dhl_tweets'] = 1
+    
+    # Append both dfs
+    sum_df = sum_engagement.append(sum_polarity, sort=False)
+    # if value is na, copy 'week_mentions'
+    sum_df['week'] = sum_df.apply(lambda row: np.where(pd.isna(row['week']), row['week_mentions'], row['week']), axis=1)
+    # if value is na, copy 'year_mentions'
+    sum_df['year'] = sum_df.apply(lambda row: np.where(pd.isna(row['year']), row['year_mentions'], row['year']), axis=1)
+    sum_df['datetime'] = sum_df.apply(lambda row: np.where(pd.isna(row['datetime']), row['datetime_mentions'], row['datetime']), axis=1)
+    # reset index and drop original
+    sum_df = sum_df.reset_index(drop=True)
+    # change unhashable np.array of dtype=object to dtype=np.int
+    sum_df['datetime'] = sum_df['datetime'].apply(lambda x: x.astype(str))
+    sum_df['week'] = sum_df['week'].apply(lambda x: x.astype(str))
+    sum_df['year'] = sum_df['year'].apply(lambda x: x.astype(str))
+
+    return pd.pivot_table(sum_df, values=['replies', 'retweets', 'likes', 'count_dhl_tweets', 'polarity_negative_mentions', 'polarity_positive_mentions', 'count_cust_tweets'], index=['datetime', 'week', 'year'], aggfunc=np.sum, fill_value=0)
+
+# Final
+def plot_graph(df, x, y, chart_type, agg_type):
+    """
+    
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        Pivoted (datetime, week, year) multiindexed dataframe using sum aggregation function.
+    x : str
+        X axis name from user input.
+    y : list
+        List of column names from user input.
+    chart_type : str
+        Name of chart type from user input.
+    agg_type : str
+        String depicting data aggregation type from user input.
+
+    Returns
+    -------
+    altair.vegalite.v4.api.Chart
+        Rendered chart.
+
+    """
+    # df = returned result from get_agg_df() > reset_index()
+    # x = str
+    # y = list of cols
+    # agg_type = str, how to aggregate data
+    
+    width = 800
+    
+    x_dict = {
+        'Hours of the day': 'hours(datetime):T',
+        'Day of the week': 'day(datetime):O',
+        'Day of the month': 'date(datetime):O',
+        'Week': 'week:O',
+        'Date': 'monthdate(datetime):O',
+        'Month': 'month(datetime):O',
+        'Quarter': 'quarter(datetime):O',
+        'Year': 'year(datetime):O'
+    }
+    
+    agg_type_dict = {
+        'Total number of Tweets': 'sum(value):Q',
+        'Average number of Tweets': 'average(value):Q',
+        'Min number of Tweets': 'min(value):Q',
+        'Max number of Tweets': 'max(value):Q'
+    }
+    
+
+    if chart_type == 'Scatter':
+        return alt.Chart(
+            data = df,
+            width = width
+        ).transform_fold(
+            y
+        ).mark_circle().encode(
+            alt.X(x_dict[x], title=x),
+            alt.Y(agg_type_dict[agg_type], title='value'),
+            color='key:N',
+            tooltip = [alt.Tooltip(x_dict[x]), alt.Tooltip('key:N'), alt.Tooltip(agg_type_dict[agg_type])]
+        ).configure_mark(
+            strokeWidth=10
+        ).interactive()
+    
+    elif chart_type == 'Line':
+        return alt.Chart(
+            data = df,
+            width = width
+        ).transform_fold(
+            y
+        ).mark_line().encode(
+            alt.X(x_dict[x], title=x),
+            alt.Y(agg_type_dict[agg_type]),
+            color='key:N',
+            tooltip = [alt.Tooltip(x_dict[x]), alt.Tooltip('key:N'), alt.Tooltip(agg_type_dict[agg_type])]
+        ).configure_mark(
+            strokeWidth=3
+        ).interactive()
+    
+    elif chart_type == 'Area':
+        return alt.Chart(
+            data = df,
+            width = width
+        ).transform_fold(
+            y
+        ).mark_area().encode(
+            alt.X(x_dict[x], title=x),
+            alt.Y(agg_type_dict[agg_type]),
+            color='key:N',
+            tooltip = [alt.Tooltip(x_dict[x]), alt.Tooltip('key:N'), alt.Tooltip(agg_type_dict[agg_type])]
+        ).configure_mark(
+            strokeWidth=10
+        ).interactive()
+    
+    elif chart_type == 'Bar':
+        return alt.Chart(
+            data = df,
+            width = width
+        ).transform_fold(
+            y
+        ).mark_bar().encode(
+            alt.X(x_dict[x], title=x),
+            alt.Y(agg_type_dict[agg_type]),
+            color='key:N',
+            tooltip = [alt.Tooltip(x_dict[x]), alt.Tooltip('key:N'), alt.Tooltip(agg_type_dict[agg_type])]
+        ).configure_mark(
+            strokeWidth=10
+        ).interactive()
+    
+    elif chart_type == 'Heatmap':
+        return alt.Chart(df).transform_fold(y).mark_rect().encode(
+            alt.X('hours(datetime):O', title='Hours of the day'),
+            alt.Y('day(datetime):O', title='Day'),
+            alt.Row('key:O', title=''),
+            color=agg_type_dict[agg_type],
+            tooltip = [alt.Tooltip('hours(datetime):O'),
+                       alt.Tooltip('day(datetime):O'),
+                       alt.Tooltip('key:N'),
+                       alt.Tooltip(agg_type_dict[agg_type])]
+        ).properties(
+            width=610,
+            height=150
+        )
+
+            
+def update_datatable(cust_tweets, selected_week):
+    """
+    Slice cust_tweets to include only tweets up to selected_week and update value in session_state
+
+    Parameters
+    ----------
+    cust_tweets : pandas.core.frame.DataFrame
+        Dataframe containing tweets from customers.
+    selected_week : datetime.date
+        Date from user input.
+
+    Returns
+    -------
+    None.
+
+    """
+    st.session_state['datatable'] = get_datatable(cust_tweets, selected_week)
+
+def main():
+    
+    # FOR RENDERING ALL PLOTS & DATATABLES
+    # Load tweet data from google drive
+    df = load_data_gdrive()
+    # Slice and get DHL accounts details from loaded df
+    dhl_acc = get_dhl_acc(df)
+    # Slice loaded df to get tweets from DHL accounts
+    dhl_tweets = get_dhl_tweet(df, dhl_acc)
+    # Slice loaded df to get tweets from customers
+    cust_tweets = get_cust_tweet(df, dhl_acc)
+    # Sort customer tweets by datetime in descending order
+    cust_tweets = cust_tweets.sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
+    
+    # FOR READING & CAPTURING USER INPUT
+    # Connect to googlesheet to read & update user input
+    googlesheet_name = 'user-validation'
+    worksheet, spread = connect_googlesheet(googlesheet_name)
+    # Load data from googlesheet
+    df_googlesheet = load_google_worksheet(worksheet)
+    
+    # Initialize datatable in session state, if doesn't exist
+    # to enable updates upon user input on date filtering
+    if 'datatable' not in st.session_state:
+        st.session_state['datatable'] = get_datatable(cust_tweets, get_weekstart())
+    
+    # Create form to receive user input for filtering
+    with st.form('sidebar_form'):
+        # Display form in sidebar
+        with st.sidebar:
+            st.title('Dashboard')
+            
+            # Create dropdown menu for navigation (page-like output)
+            choice = st.selectbox("Navigate to:", ["Home", "Trends", "Data"])
+            # Create date input for filtering
+            selected_week = st.date_input(
+                "Select KPI for week:", get_weekstart(),
+                help='Default to current week')
+            # Create form submit button
+            sidebar_submit = st.form_submit_button('Go!',
+                                       on_click=update_datatable, # Updates datatable on click
+                                       args=(cust_tweets, selected_week)) # Arguments for update_datatable function
+            
+            # If form is submitted
+            if sidebar_submit:
+                # Save value from session state object into variable
+                datatable = st.session_state['datatable']   
+
+    
+    if choice == 'Home':
+        
+        # Get value from session state object
+        datatable = st.session_state['datatable']
+        
+        st.subheader(f'Week {selected_week.isocalendar()[1]} KPIs')
+
+        # Get aggregated data
+        agg_data_kpi = get_agg_data(cust_tweets, dhl_tweets)
+        # Additional transformation 1: Remove 'datetime' column from index
+        agg_data_kpi = agg_data_kpi.reset_index(level='datetime', drop=True)
+        # Additional transformation 2: Pivot df using sum as aggregate function
+        agg_data_pivot = pd.pivot_table(agg_data_kpi, values=['replies', 'retweets', 'likes', 'count_dhl_tweets', 'polarity_negative_mentions', 'polarity_positive_mentions', 'count_cust_tweets'], index=['week', 'year'], aggfunc=np.sum, fill_value=0)
+        
+        # Get KPI data
+        kpi_dict, warning = get_kpi(agg_data_pivot, selected_week)
+
+        # Display appropriate message if any
+        if warning != "":
+            st.warning(warning)
+
+        # Initialize columns and display KPIs in each columns
+        col_h1, col_h2, col_h3, col_h4, col_h5, col_h6 = st.columns(6)
+        col_h1.metric(label="Positive Mentions", value=str(kpi_dict['Positive Mentions'][0]),
+                    delta=str(kpi_dict['Positive Mentions'][1]), delta_color='normal')
+        col_h2.metric(label="Negative Mentions", value=str(kpi_dict['Negative Mentions'][0]),
+                    delta=str(kpi_dict['Negative Mentions'][1]), delta_color='inverse')
+        col_h3.metric(label="DHL Tweets", value=str(kpi_dict['DHL Tweets'][0]),
+                      delta=str(kpi_dict['DHL Tweets'][1]), delta_color='normal')
+        col_h4.metric(label="Retweets", value=str(kpi_dict['Retweets'][0]),
+                      delta=str(kpi_dict['Retweets'][1]), delta_color='normal')
+        col_h5.metric(label="Replies", value=str(kpi_dict['Replies'][0]),
+                      delta=str(kpi_dict['Replies'][1]), delta_color='normal')
+        col_h6.metric(label="Likes", value=str(kpi_dict['Likes'][0]),
+                      delta=str(kpi_dict['Likes'][1]), delta_color='normal')
+
+        # Get positive and negative string for wordclouds
+        pos, neg = hashtags_polarity(cust_tweets, selected_week)
+        
+        # Initialize columns
+        col_h7, col_h8 = st.columns(2)
+        
+        # Create subplots
+        fig, ax = plt.subplots()
+        # Create positive wordclouds
+        positive_wordcloud = WordCloud(
+            max_words=10000, margin=10, random_state=0,
+            background_color='white',
+            width=1800,
+            height=800, collocations=False
+        ).generate_from_text(pos).recolor(color_func=lambda *args, **kwargs: (135, 220, 183)) # rgb for green color is specified in recolor function
+        plt.imshow(positive_wordcloud)
+        plt.axis("off")
+        # Display wordcloud
+        col_h7.pyplot(fig)
+        
+        # Create subplots
+        fig, ax = plt.subplots()
+        # Create negative wordcloud
+        negative_wordcloud = WordCloud(
+            max_words=10000, margin=10, random_state=0,
+            background_color='white',
+            width=1800,
+            height=800, collocations=False
+        ).generate(neg).recolor(color_func=lambda *args, **kwargs: (231, 77, 60)) # rgb for red color is specified in recolor function
+        plt.imshow(negative_wordcloud)
+        plt.axis("off")
+        # Display wordcloud
+        col_h8.pyplot(fig)
+    
+        
+        # Create form to receive user input from bokeh datatable
+        with st.form("home_form"):
+            # Datatable title
+            st.write('Top 10 Recent Tweets')
+            
+            # Initialize Bokeh ColumnDataSource object from sliced pandas dataframe
+            # ref: https://docs.bokeh.org/en/latest/docs/user_guide/data.html#using-a-pandas-dataframe
+            cds = ColumnDataSource(datatable.head(10))
+            
+            # Initialize Bokeh table column widget
+            # ref: https://docs.bokeh.org/en/latest/docs/reference/models/widgets/tables.html?#bokeh.models.TableColumn
+            columns = [
+                TableColumn(field='datetime', title='Date', formatter=DateFormatter(), width=80),
+                TableColumn(field='polarity', title='Polarity', formatter=polarity_formatter('polarity'), width=60),
+                TableColumn(field='tweet', title='Tweet',
+                            formatter=HTMLTemplateFormatter(
+                                template='<textarea readonly style="width:100%; height:500%; overflow-wrap: break-word; border-style: none; border-color: Transparent; overflow: auto; background: transparent;" "element.style.height = (25+element.scrollHeight)+"px";"> <%= value %> </textarea>')),
+                TableColumn(field="link", title='Reply @ Twitter', formatter=HTMLTemplateFormatter(
+                    template='<p style="text-align:center;"> <a href="<%= value %>"target="_blank">💬</p>'), width=90)
+            ]
+    
+            # Define events
+            cds.selected.js_on_change(
+                "indices",
+                CustomJS(
+                    args=dict(source=cds),
+                    code="""
+                    document.dispatchEvent(
+                    new CustomEvent("INDEX_SELECT", {detail: {data: source.selected.indices}})
+                    )
+                    """
+                )
+            )
+            
+            # Create DataTable plot
+            p = DataTable(source=cds, columns=columns, css_classes=["my_table"], row_height=100, editable=False,
+                          reorderable=True,
+                          scroll_to_selection=True,
+                          sortable=True,
+                          selectable="checkbox", aspect_ratio='auto', width=735)
+            
+            # Get event dict containing data from user input on rendered bokeh_plot
+            # ref: https://github.com/ash2shukla/streamlit-bokeh-events/blob/master/streamlit_bokeh_events/__init__.py#L21
+            result = streamlit_bokeh_events(bokeh_plot=p, events="INDEX_SELECT", key="datetime", refresh_on_update=False,
+                                            debounce_time=0, override_height=430)
+            
+            # Create form submit button
+            home_form_submitted = st.form_submit_button("Send Feedback", help='Tweet polarity is predicted using Sentiment Analysis Model. Help improve polarity accuracy by ☑ checkbox and click Send Feedback to flag any incorrect prediction')
+
+        # If form is submitted and checkbox(es) selected
+        if result and home_form_submitted:
+            if result.get("INDEX_SELECT"):
+                # If result is not empty list (Exception catching for when user select and then unselect any checkboxes)
+                if result.get("INDEX_SELECT")["data"] != []:
+                    # Get data using row index
+                    df_user_input = datatable.iloc[result.get("INDEX_SELECT")["data"]]
+                    # Add a column for timestamp during user input
+                    df_user_input['user_input_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    # Append new user input to exisiting df from googlesheet
+                    new_df = df_googlesheet.append(df_user_input, ignore_index=True)
+                    # Remove duplicates
+                    new_df = new_df.drop_duplicates(subset=['datetime','tweet','polarity'])
+                    # Update googlesheet (ie overwriting new_df in place of the exisiting data in googlesheet)
+                    update_googlesheet_gspread_pandas(spread, googlesheet_name, new_df)
+                    # Display appropriate message
+                    st.success('Feedback recorded. Thank you for your feedback.')
+                else:
+                    # Display appropriate message
+                    st.warning('No data selected. Please ☑ checkbox for any incorrect polarity prediction and click Send Feedback.')
+        
+        # If form is submitted but no checkbox selected, display appropriate message
+        if home_form_submitted and not result:
+            st.warning('No data selected. Please ☑ checkbox for any incorrect polarity prediction and click Send Feedback.')
+
+
+    if choice == 'Trends':
+        
+        # X axis options
+        x = ['Hours of the day',
+             'Day of the week',
+             'Day of the month',
+             'Week',
+             'Date',
+             'Month',
+             'Quarter',
+             'Year']
+        
+        # Y axis options
+        y = ['Select All',
+             'Total Customer Mentions',
+             'Total DHL Tweets',
+             'Likes',
+             'Negative Mentions',
+             'Positive Mentions',
+             'Replies',
+             'Retweets']
+        
+        # Y axis options and its corresponding column names
+        y_colname = {'count_cust_tweets': 'Total Customer Mentions',
+                    'count_dhl_tweets': 'Total DHL Tweets',
+                    'likes': 'Likes',
+                    'polarity_negative_mentions': 'Negative Mentions',
+                    'polarity_positive_mentions': 'Positive Mentions',
+                    'replies': 'Replies',
+                    'retweets': 'Retweets'}
+                
+        # Chart options
+        chart_type = ['Area',
+                      'Bar',
+                      'Heatmap',
+                      'Line',
+                      'Scatter']
+        
+        # Aggregation type options
+        agg_type = ['Total number of Tweets',
+                    'Average number of Tweets',
+                    'Min number of Tweets',
+                    'Max number of Tweets']
+        
+        # Additional transformation: reset index and rename columns
+        agg_df = get_agg_data(cust_tweets, dhl_tweets).reset_index()
+        agg_df = agg_df.rename(columns=y_colname)
+
+        # Form to get user input
+        with st.form("trend_form"):
+            # Initialize columns
+            col_t1, col_t2 = st.columns([1,2])
+            # Get user input for X axis
+            user_input_x = col_t1.selectbox("Choose X axis:", x)
+            # Get user input for Y axis
+            user_input_y = col_t2.multiselect("Choose Y axis:", y, default=['Select All'],
+                                            help='Multiple selection is allowed')
+            # Get user input for chart type
+            user_input_chart_type = col_t1.selectbox("Choose Chart type:", chart_type,
+                                                   help='Heatmap chart will default to (hours, day of the week) regardless of selected X axis')
+            # Get user input for agg type
+            user_input_agg_type = col_t2.selectbox("Choose aggregation type:", agg_type)
+            # Initialize form submit button
+            trend_form_submitted = st.form_submit_button("Submit")
+        
+        # If 'Select All' is selected, get all column names
+        if 'Select All' in user_input_y:
+            user_input_y = ['Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets']
+
+        # If form is submitted, plot graph
+        if trend_form_submitted:
+            plot = plot_graph(agg_df, user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
+            st.write(plot)
+
+    if choice == 'Data':
+        
+        # Get value from session state object
+        datatable = st.session_state['datatable']
+        
+        # Initialize columns
+        col_d1, col_d2, col_d3 = st.columns([1.5,1,1])
+        # Empty column
+        col_d1.empty()
+        # Create download button for current view
+        col_d2.download_button(label="Download CSV current view",
+                           data=convert_df(datatable[['datetime', 'date', 'time', 'polarity', 'tweet', 'link']]),
+                           file_name='data.csv', mime='text/csv')
+        # Create download button for all data
+        col_d3.download_button(label="Download CSV all data",
+                           data=convert_df(cust_tweets[['datetime', 'date', 'time', 'polarity', 'tweet', 'link']]),
+                           file_name='data.csv', mime='text/csv')
+        
+        # Create form to receive user input from bokeh datatable
+        with st.form("data_form"):
+            
+            # Datatable title
+            st.write('All Recent Tweets')
+            
+            # Initialize Bokeh ColumnDataSource object from sliced pandas dataframe
+            cds_full = ColumnDataSource(datatable)
+            
+            # Initialize Bokeh table column widget
+            columns_full = [
+                TableColumn(field='datetime', title='Date', formatter=DateFormatter(), width=60),
+                TableColumn(field='polarity', title='Polarity', formatter=polarity_formatter('polarity'), width=60),
+                TableColumn(field='tweet', title='Tweet',
+                            formatter=HTMLTemplateFormatter(
+                                template='<textarea readonly style="width:100%; height:430%; overflow-wrap: break-word; overflow:hidden; border-style: none; border-color: Transparent; overflow: auto; background: transparent;" "element.style.height = (25+element.scrollHeight)+"px";"> <%= value %> </textarea>')),
+                TableColumn(field="link", title='Reply @ Twitter', formatter=HTMLTemplateFormatter(
+                    template='<p style="text-align:center;"> <a href="<%= value %>"target="_blank">💬</p>'), width=85)
+            ]
+            
+            # Define events
+            cds_full.selected.js_on_change(
+                "indices",
+                CustomJS(
+                    args=dict(source=cds_full),
+                    code="""
+                    document.dispatchEvent(
+                    new CustomEvent("INDEX_SELECT", {detail: {data: source.selected.indices}})
+                    )
+                    """
+                )
+            )
+            
+            # Create DataTable plot
+            p_full = DataTable(source=cds_full, columns=columns_full, css_classes=["my_table"], row_height=150,
+                               editable=False,
+                               reorderable=True,
+                               scroll_to_selection=True,
+                               sortable=True,
+                               selectable="checkbox", aspect_ratio='auto', width=735)
+            
+            # Get event dict containing data from user input on rendered bokeh_plot
+            result_full = streamlit_bokeh_events(bokeh_plot=p_full, events="INDEX_SELECT", key="datetime",
+                                            refresh_on_update=False, debounce_time=0, override_height=420)
+    
+            # Create form submit button
+            data_form_submitted = st.form_submit_button("Send Feedback", help='Tweet polarity is predicted using Sentiment Analysis Model. Help improve polarity accuracy by ☑ checkbox and click Send Feedback to flag any incorrect prediction')
+            
+        # If form is submitted and checkbox(es) selected
+        if result_full and data_form_submitted:
+            if result_full.get("INDEX_SELECT"):
+                # If result is not empty list (Exception catching for when user select and then unselect any checkboxes)
+                if result_full.get("INDEX_SELECT")["data"] != []:
+                    # Get data using row index
+                    df_user_input = datatable.iloc[result_full.get("INDEX_SELECT")["data"]]
+                    # Add a column for timestamp during user input
+                    df_user_input['user_input_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    # Append new user input to exisiting df from googlesheet
+                    new_df = df_googlesheet.append(df_user_input, ignore_index=True)
+                    # Remove duplicates
+                    new_df = new_df.drop_duplicates(subset=['datetime','tweet','polarity'])
+                    # Update googlesheet (ie overwriting new_df in place of the exisiting data in googlesheet)
+                    update_googlesheet_gspread_pandas(spread, googlesheet_name, new_df)
+                    # Display appropriate message
+                    st.success('Feedback recorded. Thank you for your feedback.')
+                else:
+                    # Display appropriate message
+                    st.warning('No data selected. Please ☑ checkbox for any incorrect polarity prediction and click Send Feedback.')
+        
+        # If form is submitted but no checkbox selected, display appropriate message
+        if data_form_submitted and not result_full:
+            st.warning('No data selected. Please ☑ checkbox for any incorrect polarity prediction and click Send Feedback.')
+    
+if __name__ == '__main__':
+    main()
