@@ -1,65 +1,27 @@
-import os
-#from os import path
-#from time import sleep
 from datetime import datetime, date
 from datetime import timedelta
 import datetime
+import os
 import re
 
-from google.oauth2 import service_account
-from gspread_pandas import Spread, Client
 from bokeh.models import ColumnDataSource, CustomJS
 from bokeh.models import DataTable, TableColumn, HTMLTemplateFormatter, DateFormatter
+from dateutil import tz
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+from gspread_pandas import Spread, Client
 from streamlit_bokeh_events import streamlit_bokeh_events
 from wordcloud import WordCloud
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import altair as alt
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import streamlit as st
 import gdown
 import gspread
 
 
-# Global config ---------------------------------------------------------------
-
 st.set_page_config(page_title='Twitter Watcher', layout='wide', page_icon='📮')
-
-
-# -----------------------------------------------------------------------------
-
-
-
-def red_color_func(word, font_size, position, orientation, random_state=0, **kwargs):
-    """
-    
-
-    Parameters
-    ----------
-    word : TYPE
-        DESCRIPTION.
-    font_size : TYPE
-        DESCRIPTION.
-    position : TYPE
-        DESCRIPTION.
-    orientation : TYPE
-        DESCRIPTION.
-    random_state : TYPE, optional
-        DESCRIPTION. The default is 0.
-    **kwargs : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    str
-        Function to be used for.
-
-    """
-    return "hsl(6, 78%, 57%)"
-
-
-def green_color_func(word, font_size, position, orientation, random_state=0, **kwargs):
-    return "hsl(154, 55%, 66%)"
 
 
 def get_weekstart():
@@ -76,48 +38,31 @@ def get_weekstart():
     return today - timedelta(days=today.weekday())
 
 
-class FileReference:
-    def __init__(self, filename):
-        self.filename = filename
-
-    def get_modifiedtime(self):
-        return os.path.getmtime(self)
-
-def hash_file_reference(file_reference):
-    filename = file_reference.filename
-    return (filename, os.path.getmtime(filename))
-
-
-
-@st.cache(hash_funcs={FileReference: hash_file_reference})
-def load_data():
+@st.cache
+def load_data_gdrive(data_file_id):
     """
-    Get the latest data
+    Load data from Google Drive
+
+    Parameters
+    ----------
+    data_file_id : str
+        Unique file ID corresponding to stored Tweet data in Google Drive.
 
     Returns
     -------
-    pandas dataframe
-        Latest data.
+    pandas.core.frame.DataFrame
+        Cleaned pandas dataframe returned from clean_df() function.
 
     """
-    # TODO: change to directly download from google drive instead of github
-    filename = 'https://raw.githubusercontent.com/SarahHannes/tweet-sentiment/dev/data.txt'
-    file = FileReference(filename)
-    df = pd.read_csv(file.filename, sep='\t')
-    return clean_df(df)
-
-
-#@st.cache(hash_funcs={FileReference: hash_file_reference})
-def load_data_gdrive():
-    DATA_FILE_ID = '1XiABfco1-NpSwSjl32BAUS_HqPrBFYzD'
-    DATA_URL = 'https://drive.google.com/uc?id=' + DATA_FILE_ID
-    DATA_OUTPUT = 'data.txt'
-    # Download model from google drive
-    gdown.download(DATA_URL, DATA_OUTPUT, quiet=True)
+    data_url = 'https://drive.google.com/uc?id=' + data_file_id
+    data_output = 'data.txt'
     
-    file = FileReference(DATA_OUTPUT)
-    df = pd.read_csv(file.filename, sep='\t')
+    # Download data from google drive
+    gdown.download(data_url, data_output, quiet=True)
+    
+    df = pd.read_csv(data_output, sep='\t')
     return clean_df(df)
+
 
 def clean_df(df):
     """
@@ -127,12 +72,12 @@ def clean_df(df):
 
     Parameters
     ----------
-    df : pandas dataframe
+    df : pandas.core.frame.DataFrame
         Raw dataframe.
 
     Returns
     -------
-    df : pandas dataframe
+    df : pandas.core.frame.DataFrame
         Preprocessed dataframe.
 
     """
@@ -163,7 +108,7 @@ def get_dhl_acc(df):
 
     Parameters
     ----------
-    df : pandas dataframe
+    df : pandas.core.frame.DataFrame
         Tweets data.
 
     Returns
@@ -183,14 +128,14 @@ def get_dhl_tweet(df, dhl_acc):
 
     Parameters
     ----------
-    df : pandas dataframe
+    df : pandas.core.frame.DataFrame
         Tweets data.
     dhl_acc : list
         List of Twitter account usernames associated with DHL.
 
     Returns
     -------
-    pandas dataframe
+    pandas.core.frame.DataFrame
         Filtered dataframe containing only Tweets by DHL associated accounts.
 
     """
@@ -203,44 +148,50 @@ def get_cust_tweet(df, dhl_acc):
 
     Parameters
     ----------
-    df : pandas dataframe
+    df : pandas.core.frame.DataFrame
         Tweets data.
     dhl_acc : list
         List of Twitter account usernames associated with DHL.
 
     Returns
     -------
-    pandas dataframe
-        Filtered dataframe containing only Tweets by general Twitter users (ie possibly DHL customers).
+    pandas.core.frame.DataFrame
+        Filtered dataframe by removing Tweets by DHL associated accounts.
 
     """
     return df[~df['username'].isin(dhl_acc)].reset_index(drop=True)
 
 
-# does not slice for date filter
-@st.cache(persist=True)
-def hashtags_polarity2(df):
-    positive_df = df[df['polarity'] == 'positive'].copy()
-    negative_df = df[df['polarity'] == 'negative'].copy()
-    positive_list = positive_df['hashtags'].apply(
-        lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
-    negative_list = negative_df['hashtags'].apply(
-        lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
-    return (' ').join([item for sublist in positive_list for item in sublist]), (' ').join(
-        [item for sublist in negative_list for item in sublist])
-
-
-# slice for date filter
 @st.cache(persist=True)
 def hashtags_polarity(df, selected_week):
-    # unpack year, weeknum and day from selected date
+    """
+    Get hashtags associated with Negative polarity and Positive polarity
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        Dataframe containing only customer Tweets.
+    selected_week : datetime.date
+        Date provided by user input.
+
+    Returns
+    -------
+    positive_words : str
+        Words from Positive Tweets hashtags.
+    negative_words : str
+        Words from Negative Tweets hashtags.
+
+    """
+    
+    # Unpack year, weeknum and day from selected date
     cw_year, cw_weeknum, cw_day = selected_week.isocalendar()
 
-    # slice df based on selected date and polarity, then save as new df
+    # Slice df based on selected date and polarity, then save as new df
     positive_df = df.loc[(df['week'] == cw_weeknum) & (df['year'] == cw_year) & (df['polarity'] == 'positive')].copy()
     negative_df = df.loc[(df['week'] == cw_weeknum) & (df['year'] == cw_year) & (df['polarity'] == 'negative')].copy()
-
-    if len(positive_df) == 0:  # if either one is empty df, then show the most recent data
+    
+    # If either one is empty, get the most recent data
+    if len(positive_df) == 0:
         top2_weeknum = df['week'].unique()[-2]
         max_year = max(df['year'])
 
@@ -253,26 +204,25 @@ def hashtags_polarity(df, selected_week):
         max_year = max(df['year'])
         negative_df = df.loc[
             (df['week'] == top2_weeknum) & (df['year'] == max_year) & (df['polarity'] == 'negative')].copy()
-    # get hashtags
+    
+    # Combine hashtags into list of words
     positive_list = positive_df['hashtags'].apply(
         lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
     negative_list = negative_df['hashtags'].apply(
         lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
 
-    # join words
+    # Join words
     positive_words = (' ').join([item for sublist in positive_list for item in sublist])
     negative_words = (' ').join([item for sublist in negative_list for item in sublist])
 
     return positive_words, negative_words
 
 
-
-# return delta in direct value differences
-# in case of requested data is not available, automatically show the latest kpi
 @st.cache(persist=True)
 def get_kpi(weekly_data, selected_week):
     """
-    Returns KPI value and delta for all 6 KPIs.
+    Returns KPI value and delta for all 6 KPIs. If data is not available for
+    selected_week, returns KPIs for the latest week available
 
     Parameters
     ----------
@@ -284,27 +234,34 @@ def get_kpi(weekly_data, selected_week):
     Returns
     -------
     kpi_dict : dict
-        Dictionary containing kpi_name: (current week's value, current week's value - previous week's value) for all 6 KPIs.
+        Dictionary containing kpi_name: (current week's value, delta) for all 6 KPIs.
     warning : str
         String storing warning to display, if any.
 
     """
+    
     # Reset index to perform transformation
     weekly_data2 = weekly_data.reset_index()
+    
     # Change from str type -> int to enable slicing later
     weekly_data2['year'] = weekly_data2['year'].apply(lambda x: int(x[:-2]))
     weekly_data2['week'] = weekly_data2['week'].apply(lambda x: int(x))
+    
     # Set back index to week, year
     weekly_data2 = weekly_data2.set_index(['week', 'year'])
-    # Initialize empty dict to store kpi with format -> kpi_name: (current week value, delta)
+    
+    # Initialize empty dict to store KPI with format -> kpi_name: (current week value, delta)
     kpi_dict = {}
 
     try:
         current_week = selected_week
         previous_week = selected_week - timedelta(days=7)
+        
+        # Unpack year, weeknum and day from selected week and previous week
         cw_year, cw_weeknum, cw_day = current_week.isocalendar()
         pw_year, pw_weeknum, pw_day = previous_week.isocalendar()
-
+        
+        # For each KPI, get its current value and previous value, then save in kpi_dict
         for key, column_name in [('Positive Mentions', 'polarity_positive_mentions'),
                                  ('Negative Mentions', 'polarity_negative_mentions'),
                                  ('Retweets', 'retweets'),
@@ -317,7 +274,8 @@ def get_kpi(weekly_data, selected_week):
 
         warning = ""
 
-    except KeyError as e:  # data does not exist
+    # If data does not exist, get the most recent KPI
+    except KeyError as e:
         warning = f'Data is not available for week, year {e}. Showing the most recent KPI'
         weekly_data = weekly_data.sort_index()  # sort index ascendingly
         (cw_weeknum, cw_year), (pw_weeknum, pw_year) = weekly_data.index.take([-1, -2])  # get the 2 latest weeknum, year available
@@ -334,22 +292,38 @@ def get_kpi(weekly_data, selected_week):
 
     return kpi_dict, warning
 
-# @st.cache(persist=True)
+
 def get_datatable(df, selected_week):
+    """
+    Slice to obtain only data for selected_week
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        Dataframe containing data to be sliced.
+    selected_week : datetime.date
+        Date from user input.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        Sliced dataframe sorted in descenging order by datetime column.
+
+    """
     week_start = selected_week
     week_end = selected_week + timedelta(days=7)
 
-    # sort by datetime
+    # Sort df by datetime in descending order
     df = df.sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
 
-    # a workaround to ensure that time is always rendered in correct format
+    # A workaround to ensure that time is always rendered in correct format
     df['time'] = df['time'].apply(lambda x: str(x))
 
-    # slice for date filter
+    # Slice df to get only data for selected week
     filtered_df = df[
         (df['date'] >= np.datetime64(week_start)) & (df['date'] <= np.datetime64(week_end))].copy().reset_index()
 
-    # exception catching. if sliced df is empty, get the latest week available
+    # Exception catching: If sliced df is empty, get the latest week available
     if len(filtered_df) == 0:
         week_end = max(df['date'])
         week_start = week_end - timedelta(days=7)
@@ -357,17 +331,64 @@ def get_datatable(df, selected_week):
         filtered_df = df[
             (df['date'] >= np.datetime64(week_start)) & (df['date'] <= np.datetime64(week_end))].copy().reset_index()
 
-    # return df
+    
     return filtered_df[['datetime', 'date', 'time', 'polarity', 'tweet', 'link']].sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
-    # return filtered_df.sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
+
+
+def update_datatable(cust_tweets, selected_week):
+    """
+    Slice to obtain only data for selected_week and update value in session_state
+
+    Parameters
+    ----------
+    cust_tweets : pandas.core.frame.DataFrame
+        Dataframe containing data to be sliced.
+    selected_week : datetime.date
+        Date from user input.
+
+    Returns
+    -------
+    None.
+
+    """
+    st.session_state['datatable'] = get_datatable(cust_tweets, selected_week)
 
 
 def load_google_worksheet(worksheet):
-    # get all rows from the worksheet
+    """
+    Get all rows from connected google worksheet
+
+    Parameters
+    ----------
+    worksheet : gspread.models.Worksheet
+        Loaded worksheet which contains user input.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        Dataframe containing all rows from google worksheet.
+
+    """
+    
     return pd.DataFrame(worksheet.get_all_records())
 
 
 def update_google_worksheet(worksheet, df):
+    """
+    Update new user input from df to connected worksheet
+
+    Parameters
+    ----------
+    worksheet : gspread.models.Worksheet
+        Connected worksheet which contains user input.
+    df : pandas.core.frame.DataFrame
+        Dataframe to write to worksheet.
+
+    Returns
+    -------
+    None.
+
+    """
     # Get column names
     column_name = df.columns.values.tolist()
     # Get value to append to worksheet
@@ -376,12 +397,72 @@ def update_google_worksheet(worksheet, df):
     worksheet.update([column_name] + row_value)
 
 
-def connect_googlesheet(googlesheet_name):
+def build_connection():
+    """
+    Initialize credentials object and drive_service object to interact with
+    Google Drive API.
+
+    Returns
+    -------
+    credentials : google.oauth2.service_account.Credentials
+        Credentials object for Google service account built using credentials
+        obtained from GCP > IAM & Admin > Service Accounts > KEYS.
+    drive_service : googleapiclient.discovery.Resource
+        Initialized Resource to interact with Google Drive API.
+        Ref: https://googleapis.github.io/google-api-python-client/docs/epy/googleapiclient.discovery-module.html
+
+    """
     # Create a connection object
     credentials = service_account.Credentials.from_service_account_info(
         st.secrets["gcp_service_account"],
         scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"])
+    drive_service = build('drive', 'v3', credentials=credentials)
+    
+    return credentials, drive_service
 
+
+def get_modified_time(file_id, drive_service):
+    """
+    Get latest modified time from file stored in Google Drive folder
+
+    Parameters
+    ----------
+    file_id : str
+        Unique ID of file stored in Google Drive.
+    drive_service : googleapiclient.discovery.Resource
+        Initialized Resource to interact with Google Drive API.
+
+    Returns
+    -------
+    str
+        Description of last modified time.
+
+    """
+    metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d").tz_convert(tz.tzlocal())
+    return f'Last Update at {mtime.date().year}-{mtime.date().month}-{mtime.date().day} {mtime.time().hour}:{mtime.time().minute}'
+
+
+def connect_googlesheet(googlesheet_name, credentials):
+    """
+    Connect to existing Google Sheet
+
+    Parameters
+    ----------
+    googlesheet_name : str
+        Name of Private Google Sheet accessible by created Google service account.
+    credentials : google.oauth2.service_account.Credentials
+        Credentials object for Google service account built using credentials
+        obtained from GCP > IAM & Admin > Service Accounts > KEYS.
+
+    Returns
+    -------
+    worksheet : gspread.models.Worksheet
+        Connected Google worksheet.
+    spread : gspread_pandas.spread.Spread
+        Connected Google Spreadsheet.
+
+    """
     # Get google sheet url from secrets
     sheet_url = st.secrets["private_gsheets_url"]
 
@@ -394,6 +475,7 @@ def connect_googlesheet(googlesheet_name):
 
     # Open the worksheet
     worksheet = sh.worksheet(title=googlesheet_name)
+    
     # Create an instance of Client class to comunicate with Google API
     # ref: https://gspread-pandas.readthedocs.io/en/latest/gspread_pandas.html#gspread_pandas.client.Client
     client = Client(creds=credentials)
@@ -405,11 +487,44 @@ def connect_googlesheet(googlesheet_name):
 
 
 def update_googlesheet_gspread_pandas(spread, googlesheet_name, df):
+    """
+    Updates data in connected Google Spreadsheet
+
+    Parameters
+    ----------
+    spread : gspread_pandas.spread.Spread
+        Connected Google Spreadsheet.
+    googlesheet_name : str
+        Name of Google Worksheet.
+    df : pandas.core.frame.DataFrame
+        Dataframe to update to Google Worksheet.
+
+    Returns
+    -------
+    None.
+
+    """
     col = ['datetime', 'tweet', 'polarity', 'user_input_timestamp']
     spread.df_to_sheet(df[col], sheet=googlesheet_name, index=False)
 
 
 def polarity_formatter(my_col):
+    """
+    Format polarity column to highlight row based on polarity.
+    Rows for negative polarity is highlighted in red, and rows for positive
+    polarity is highlighted in green
+
+    Parameters
+    ----------
+    my_col : pandas.core.series.Series
+        Column to be formatted.
+
+    Returns
+    -------
+    bokeh.models.widgets.tables.HTMLTemplateFormatter
+        HTML Template Formatter with user-defined template.
+
+    """
     template = """
         <div style="background:<%= 
             (function colorfromint(){
@@ -428,9 +543,41 @@ def polarity_formatter(my_col):
 
 @st.cache
 def convert_df(df):
+    """
+    Convert pandas dataframe into csv file for user to download
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        Dataframe to converted to csv to.
+
+    Returns
+    -------
+    NoneType
+        Function to convert pandas dataframe to csv file.
+
+    """
     return df.to_csv().encode('utf-8')
 
+
 def get_agg_data(cust_tweets, dhl_tweets):
+    """
+    Aggregate Tweets data into multiindexed dataframe (datatime, week, year).
+    Aggregation function used is summation.
+
+    Parameters
+    ----------
+    cust_tweets : pandas.core.frame.DataFrame
+        Dataframe containing Tweets from customers.
+    dhl_tweets : pandas.core.frame.DataFrame
+        Dataframe containing Tweets from DHL associated accounts.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        Pivoted multiindexed pandas dataframe aggregated using summation.
+
+    """
     # Get polarity data from cust_tweets
     # Get one-hot encoded columns for 'polarity'
     sum_polarity = pd.concat([pd.get_dummies(cust_tweets[['datetime', 'year', 'polarity']]), cust_tweets[['week']]], axis=1).add_suffix('_mentions')
@@ -466,10 +613,10 @@ def get_agg_data(cust_tweets, dhl_tweets):
 
     return pd.pivot_table(sum_df, values=['replies', 'retweets', 'likes', 'count_dhl_tweets', 'polarity_negative_mentions', 'polarity_positive_mentions', 'count_cust_tweets'], index=['datetime', 'week', 'year'], aggfunc=np.sum, fill_value=0)
 
-# Final
+
 def plot_graph(df, x, y, chart_type, agg_type):
     """
-    
+    Plot altair chart from user input
 
     Parameters
     ----------
@@ -592,29 +739,17 @@ def plot_graph(df, x, y, chart_type, agg_type):
         )
 
             
-def update_datatable(cust_tweets, selected_week):
-    """
-    Slice cust_tweets to include only tweets up to selected_week and update value in session_state
-
-    Parameters
-    ----------
-    cust_tweets : pandas.core.frame.DataFrame
-        Dataframe containing tweets from customers.
-    selected_week : datetime.date
-        Date from user input.
-
-    Returns
-    -------
-    None.
-
-    """
-    st.session_state['datatable'] = get_datatable(cust_tweets, selected_week)
 
 def main():
     
+    # Build credential object and connection to google drive
+    credentials, drive_service = build_connection()
+    # File ID for Tweet data stored in Google Drive
+    data_file_id = '1XiABfco1-NpSwSjl32BAUS_HqPrBFYzD'
+    
     # FOR RENDERING ALL PLOTS & DATATABLES
     # Load tweet data from google drive
-    df = load_data_gdrive()
+    df = load_data_gdrive(data_file_id)
     # Slice and get DHL accounts details from loaded df
     dhl_acc = get_dhl_acc(df)
     # Slice loaded df to get tweets from DHL accounts
@@ -627,15 +762,19 @@ def main():
     # FOR READING & CAPTURING USER INPUT
     # Connect to googlesheet to read & update user input
     googlesheet_name = 'user-validation'
-    worksheet, spread = connect_googlesheet(googlesheet_name)
+    worksheet, spread = connect_googlesheet(googlesheet_name, credentials)
     # Load data from googlesheet
     df_googlesheet = load_google_worksheet(worksheet)
+    
+    
+
+
     
     # Initialize datatable in session state, if doesn't exist
     # to enable updates upon user input on date filtering
     if 'datatable' not in st.session_state:
         st.session_state['datatable'] = get_datatable(cust_tweets, get_weekstart())
-    
+
     # Create form to receive user input for filtering
     with st.form('sidebar_form'):
         # Display form in sidebar
@@ -649,9 +788,15 @@ def main():
                 "Select KPI for week:", get_weekstart(),
                 help='Default to current week')
             # Create form submit button
+            
             sidebar_submit = st.form_submit_button('Go!',
                                        on_click=update_datatable, # Updates datatable on click
                                        args=(cust_tweets, selected_week)) # Arguments for update_datatable function
+
+            st.write('')
+            st.write('')
+            st.write('')
+            st.write(get_modified_time(data_file_id, drive_service))
             
             # If form is submitted
             if sidebar_submit:
@@ -849,9 +994,12 @@ def main():
                     'Min number of Tweets',
                     'Max number of Tweets']
         
-        # Additional transformation: reset index and rename columns
+        # Reset index for further transformation
         agg_df = get_agg_data(cust_tweets, dhl_tweets).reset_index()
+        # Rename columns
         agg_df = agg_df.rename(columns=y_colname)
+        # Get only data up to selected_week
+        filtered_agg_df = agg_df.loc[(agg_df['datetime'] <= f'{selected_week.year}-{selected_week.month}-{selected_week.day} 23:59:59')].copy()
 
         # Form to get user input
         with st.form("trend_form"):
@@ -876,7 +1024,7 @@ def main():
 
         # If form is submitted, plot graph
         if trend_form_submitted:
-            plot = plot_graph(agg_df, user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
+            plot = plot_graph(filtered_agg_df, user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
             st.write(plot)
 
     if choice == 'Data':
