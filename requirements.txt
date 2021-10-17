@@ -29,7 +29,8 @@ google==2.0.2
 google-auth-httplib2>=0.1.0
 google-auth-oauthlib==0.4.6
 
-matplotlib==3.4.3
+#matplotlib==3.4.3
+matplotlib>=3.0.0
 #matplotlib==3.3.4
 altair==4.1.0
 gspread_pandas==2.3.0
