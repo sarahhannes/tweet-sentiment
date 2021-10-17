@@ -1,7 +1,6 @@
 from datetime import datetime, date
 from datetime import timedelta
-from datetime import *
-#import datetime
+import datetime
 import os
 import re
 
@@ -744,8 +743,8 @@ def plot_graph(df, x, y, chart_type, agg_type):
 def main():
 
     # Get UTC offset from user's local time
-    now_local = datetime.now()
-    now_utc = datetime.utcnow()
+    now_local = datetime.datetime.now()
+    now_utc = datetime.datetime.utcnow()
 
     utc_offset = (now_local - now_utc)
     utc_offset = int(float((utc_offset.seconds + utc_offset.days * 24 * 3600)) / 3600)
