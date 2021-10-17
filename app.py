@@ -421,7 +421,7 @@ def build_connection():
     return credentials, drive_service
 
 
-def get_modified_time(file_id, drive_service, tz):
+def get_modified_time2(file_id, drive_service, tz):
     """
     Get latest modified time from file stored in Google Drive folder
 
@@ -447,6 +447,28 @@ def get_modified_time(file_id, drive_service, tz):
     return mtime.tz_convert(tz)
     #return mtime.tz_convert(tz)
     #return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour}:{mtime.minute}'
+
+
+def get_modified_time(file_id, drive_service, local_tz):
+    """
+    Get latest modified time from file stored in Google Drive folder
+
+    Parameters
+    ----------
+    file_id : str
+        Unique ID of file stored in Google Drive.
+    drive_service : googleapiclient.discovery.Resource
+        Initialized Resource to interact with Google Drive API.
+
+    Returns
+    -------
+    str
+        Description of last modified time.
+
+    """
+    metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d").tz_convert(local_tz)
+    return mtime
 
 
 def connect_googlesheet(googlesheet_name, credentials):
@@ -770,7 +792,7 @@ def main():
     # utc_offset = (now_local - now_utc)
     # utc_offset = int(float((utc_offset.seconds + utc_offset.days * 24 * 3600)) / 3600)
 
-    tz = get_tz()
+    local_tz = get_tz()
 
     # Build credential object and connection to google drive
     credentials, drive_service = build_connection()
@@ -822,7 +844,7 @@ def main():
             st.write('')
             st.write('')
             st.write('')
-            st.write(get_modified_time(data_file_id, drive_service, tz))
+            st.write(get_modified_time(data_file_id, drive_service, local_tz))
             
             # If form is submitted
             if sidebar_submit:
