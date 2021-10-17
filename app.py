@@ -439,8 +439,9 @@ def get_modified_time(file_id, drive_service):
 
     """
     metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d").tz_convert(tz.tzlocal())
-    return f'Last Update at {mtime.date().year}-{mtime.date().month}-{mtime.date().day} {mtime.time().hour}:{mtime.time().minute}'
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d")#.tz_convert(tz.tzlocal())
+    return f'Last Update at {mtime}'
+    #return f'Last Update at {mtime.date().year}-{mtime.date().month}-{mtime.date().day} {mtime.time().hour}:{mtime.time().minute}'
 
 
 def connect_googlesheet(googlesheet_name, credentials):
@@ -765,10 +766,6 @@ def main():
     worksheet, spread = connect_googlesheet(googlesheet_name, credentials)
     # Load data from googlesheet
     df_googlesheet = load_google_worksheet(worksheet)
-    
-    
-
-
     
     # Initialize datatable in session state, if doesn't exist
     # to enable updates upon user input on date filtering
