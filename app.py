@@ -421,34 +421,6 @@ def build_connection():
     return credentials, drive_service
 
 
-def get_modified_time2(file_id, drive_service, tz):
-    """
-    Get latest modified time from file stored in Google Drive folder
-
-    Parameters
-    ----------
-    file_id : str
-        Unique ID of file stored in Google Drive.
-    drive_service : googleapiclient.discovery.Resource
-        Initialized Resource to interact with Google Drive API.
-
-    Returns
-    -------
-    str
-        Description of last modified time.
-
-    """
-    metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    # mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d")
-    # return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour+utc_offset}:{mtime.minute}'
-    #mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d").tz_localize('UTC').dt.tz_convert(tz)
-    #mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d").tz_localize('UTC').tz_convert(tz)
-    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d")
-    return mtime.tz_convert(tz)
-    #return mtime.tz_convert(tz)
-    #return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour}:{mtime.minute}'
-
-
 def get_modified_time(file_id, drive_service, local_tz):
     """
     Get latest modified time from file stored in Google Drive folder
@@ -467,7 +439,7 @@ def get_modified_time(file_id, drive_service, local_tz):
 
     """
     metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d").tz_convert(local_tz)
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_convert(local_tz)
     return mtime
 
 
@@ -665,11 +637,6 @@ def plot_graph(df, x, y, chart_type, agg_type):
         Rendered chart.
 
     """
-    # df = returned result from get_agg_df() > reset_index()
-    # x = str
-    # y = list of cols
-    # agg_type = str, how to aggregate data
-    
     width = 800
     
     x_dict = {
