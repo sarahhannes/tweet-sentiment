@@ -16,6 +16,7 @@ import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pytz
 import streamlit as st
 import gdown
 import gspread
@@ -421,7 +422,7 @@ def build_connection():
     return credentials, drive_service
 
 
-def get_modified_time(file_id, drive_service, utc_offset):
+def get_modified_time(file_id, drive_service, tz):
     """
     Get latest modified time from file stored in Google Drive folder
 
@@ -439,8 +440,10 @@ def get_modified_time(file_id, drive_service, utc_offset):
 
     """
     metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d")
-    return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour+utc_offset}:{mtime.minute}'
+    # mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d")
+    # return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour+utc_offset}:{mtime.minute}'
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d").tz_localize('UTC').dt.tz_convert(tz)
+    return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour}:{mtime.minute}'
 
 
 def connect_googlesheet(googlesheet_name, credentials):
@@ -738,16 +741,25 @@ def plot_graph(df, x, y, chart_type, agg_type):
             height=150
         )
 
-            
+
+def get_tz():
+    utc_offset = timedelta(hours=5, minutes=30)  # +5:30
+    now = datetime.now(pytz.utc)  # current time
+    print({tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set)
+           if now.astimezone(tz).utcoffset() == utc_offset})
+    tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if now.astimezone(tz).utcoffset() == utc_offset]
+    return tz_list[0]
+
 
 def main():
 
     # Get UTC offset from user's local time
-    now_local = datetime.datetime.now()
-    now_utc = datetime.datetime.utcnow()
+    # now_local = datetime.datetime.now()
+    # now_utc = datetime.datetime.utcnow()
+    # utc_offset = (now_local - now_utc)
+    # utc_offset = int(float((utc_offset.seconds + utc_offset.days * 24 * 3600)) / 3600)
 
-    utc_offset = (now_local - now_utc)
-    utc_offset = int(float((utc_offset.seconds + utc_offset.days * 24 * 3600)) / 3600)
+    tz = get_tz()
 
     # Build credential object and connection to google drive
     credentials, drive_service = build_connection()
@@ -789,7 +801,7 @@ def main():
             # Create date input for filtering
             selected_week = st.date_input(
                 "Select KPI for week:", get_weekstart(),
-                help='Default to current week')
+                help='Default to current business week')
             # Create form submit button
             
             sidebar_submit = st.form_submit_button('Go!',
@@ -799,7 +811,7 @@ def main():
             st.write('')
             st.write('')
             st.write('')
-            st.write(get_modified_time(data_file_id, drive_service, utc_offset))
+            st.write(get_modified_time(data_file_id, drive_service, tz))
             
             # If form is submitted
             if sidebar_submit:
