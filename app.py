@@ -745,12 +745,20 @@ def plot_graph(df, x, y, chart_type, agg_type):
 
 
 def get_tz():
-    utc_offset = timedelta(hours=5, minutes=30)  # +5:30
+    now_local = datetime.datetime.now()
+    now_utc = datetime.datetime.utcnow()
+    utc_offset = (now_local - now_utc)
+    days, hours, minutes = utc_offset.days, utc_offset.seconds // 3600, utc_offset.seconds % 3600 / 60.0
+    utc_offset = timedelta(days=days, hours=hours, minutes=minutes)
+
     now = datetime.datetime.now(pytz.utc)  # current time
-    print({tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set)
-           if now.astimezone(tz).utcoffset() == utc_offset})
-    tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if now.astimezone(tz).utcoffset() == utc_offset]
-    return tz_list[0]
+
+    tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if
+               now.astimezone(tz).utcoffset() == utc_offset]
+    if len(tz_list) == 0:
+        return 'America/New_York'
+    else:
+        return tz_list[0]
 
 
 def main():
