@@ -1,5 +1,4 @@
-from datetime import datetime, date
-from datetime import timedelta
+from datetime import datetime, date, timedelta
 import datetime
 import os
 import re
@@ -744,7 +743,7 @@ def plot_graph(df, x, y, chart_type, agg_type):
 
 def get_tz():
     utc_offset = timedelta(hours=5, minutes=30)  # +5:30
-    now = datetime.now(pytz.utc)  # current time
+    now = datetime.datetime.now(pytz.utc)  # current time
     print({tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set)
            if now.astimezone(tz).utcoffset() == utc_offset})
     tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if now.astimezone(tz).utcoffset() == utc_offset]
