@@ -46,3 +46,4 @@ streamlit_bokeh_events==0.1.2
 google_api_python_client==2.26.1
 protobuf==3.18.1
 python_dateutil==2.8.2
+pytz>=2021.3
