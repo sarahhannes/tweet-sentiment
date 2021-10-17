@@ -36,7 +36,8 @@ altair==4.1.0
 gspread_pandas==2.3.0
 streamlit==0.89.0
 bokeh==2.3.3
-pandas==1.2.4
+#pandas==1.2.4
+pandas>=1.0.0
 numpy==1.20.3
 gspread==4.0.1
 wordcloud==1.8.1
