@@ -38,7 +38,7 @@ def get_weekstart():
     return today - timedelta(days=today.weekday())
 
 
-@st.cache
+#@st.cache
 def load_data_gdrive(data_file_id):
     """
     Load data from Google Drive
