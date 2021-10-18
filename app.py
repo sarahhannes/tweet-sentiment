@@ -5,7 +5,7 @@ import re
 
 from bokeh.models import ColumnDataSource, CustomJS
 from bokeh.models import DataTable, TableColumn, HTMLTemplateFormatter, DateFormatter
-from dateutil import tz
+#from dateutil import tz
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from gspread_pandas import Spread, Client
