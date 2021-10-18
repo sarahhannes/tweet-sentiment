@@ -439,8 +439,8 @@ def get_modified_time(file_id, drive_service, local_tz):
 
     """
     metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    print('metadata from google drive api', metadata)
-    print('Modified time from google drive api', metadata['modifiedTime'])
+    st.write('metadata from google drive api', metadata)
+    st.write('Modified time from google drive api', metadata['modifiedTime'])
     mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_convert(None).tz_localize('GMT').tz_convert(local_tz)
     return mtime
 
@@ -742,14 +742,14 @@ def get_tz():
     utc_offset = (now_local - now_utc)
     days, hours, minutes = utc_offset.days, utc_offset.seconds // 3600, utc_offset.seconds % 3600 / 60.0
     utc_offset = timedelta(days=days, hours=hours, minutes=minutes)
-    print('utc_offset in get_tz', utc_offset)
+    st.write('utc_offset in get_tz', utc_offset)
 
     now = datetime.datetime.now(pytz.utc)  # current time
-    print('now in get_tz', now)
+    st.write('now in get_tz', now)
 
     tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if
                now.astimezone(tz).utcoffset() == utc_offset]
-    print('tz_list from get_tz', tz_list)
+    st.write('tz_list from get_tz', tz_list)
 
     if len(tz_list) == 0:
         return 'America/New_York'
