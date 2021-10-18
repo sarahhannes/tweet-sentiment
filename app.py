@@ -750,7 +750,6 @@ def get_tz():
     tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if
                now.astimezone(tz).utcoffset() == utc_offset]
     print('tz_list from get_tz', tz_list)
-    print('tz_list[0]', tz_list[0])
 
     if len(tz_list) == 0:
         return 'America/New_York'
