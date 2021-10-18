@@ -431,6 +431,8 @@ def get_modified_time(file_id, drive_service, local_tz):
         Unique ID of file stored in Google Drive.
     drive_service : googleapiclient.discovery.Resource
         Initialized Resource to interact with Google Drive API.
+    local_tz : str
+        Region for timezone eg "Asia/Kuala_Lumpur".
 
     Returns
     -------
@@ -439,9 +441,7 @@ def get_modified_time(file_id, drive_service, local_tz):
 
     """
     metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    st.write('metadata from google drive api', metadata)
-    st.write('Modified time from google drive api', metadata['modifiedTime'])
-    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_convert(None).tz_localize('GMT').tz_convert(local_tz)
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_localize('GMT').tz_convert(local_tz)
     return mtime
 
 
@@ -737,6 +737,15 @@ def plot_graph(df, x, y, chart_type, agg_type):
 
 
 def get_tz():
+    """
+    Get user's local timezone
+
+    Returns
+    -------
+    str
+        Region corresponding to user's current timezone eg "Asia/Kuala_Lumpur"
+
+    """
     now_local = datetime.datetime.now()
     now_utc = datetime.datetime.utcnow()
     diff = (now_local - now_utc)
@@ -748,13 +757,6 @@ def get_tz():
     tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if
                now.astimezone(tz).utcoffset() == utc_offset]
 
-    st.write('now_local in get_tz', now_local)
-    st.write('now_utc in get_tz', now_utc)
-    st.write('diff', diff)
-    st.write('utc_offset in get_tz', utc_offset)
-    st.write('now in get_tz', now)
-    st.write('tz_list from get_tz', tz_list)
-
     if len(tz_list) == 0:
         return 'America/New_York'
     else:
@@ -763,13 +765,9 @@ def get_tz():
 
 def main():
 
-    # Get UTC offset from user's local time
-    # now_local = datetime.datetime.now()
-    # now_utc = datetime.datetime.utcnow()
-    # utc_offset = (now_local - now_utc)
-    # utc_offset = int(float((utc_offset.seconds + utc_offset.days * 24 * 3600)) / 3600)
-
-    local_tz = get_tz()
+    # Get user's local timezone
+    # local_tz = get_tz()
+    local_tz = "Asia/Kuala_Lumpur"
 
     # Build credential object and connection to google drive
     credentials, drive_service = build_connection()
