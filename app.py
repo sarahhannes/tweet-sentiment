@@ -277,8 +277,8 @@ def get_kpi(weekly_data, selected_week):
     # If data does not exist, get the most recent KPI
     except KeyError as e:
         warning = f'Data is not available for week, year {e}. Showing the most recent KPI'
-        weekly_data = weekly_data.sort_index()  # sort index ascendingly
-        (cw_weeknum, cw_year), (pw_weeknum, pw_year) = weekly_data.index.take([-1, -2])  # get the 2 latest weeknum, year available
+        weekly_data2 = weekly_data2.sort_index()  # sort index ascendingly
+        (cw_weeknum, cw_year), (pw_weeknum, pw_year) = weekly_data2.index.take([-1, -2])  # get the 2 latest weeknum, year available
 
         for key, column_name in [('Positive Mentions', 'polarity_positive_mentions'),
                                  ('Negative Mentions', 'polarity_negative_mentions'),
