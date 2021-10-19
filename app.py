@@ -1024,9 +1024,9 @@ def main():
         # Get only data up to selected_week
         filtered_agg_df = agg_df.loc[(agg_df['datetime'] <= f'{selected_week.year}-{selected_week.month}-{selected_week.day} 23:59:59')].copy()
         # Change column type
-        #filtered_agg_df['datetime'] = pd.to_datetime(filtered_agg_df['datetime'])
-        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(
-            lambda x: pd.to_datetime(x).tz_localize('GMT').tz_convert(local_tz))
+        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_localize('UTC').tz_convert(local_tz))
+        # Get date column
+        filtered_agg_df['date'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).date())
 
         # Get min and max dates from df
         df_min_date = min(df['datetime'])
@@ -1058,19 +1058,26 @@ def main():
         if 'Select All' in user_input_y:
             user_input_y = ['Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets']
 
+        # If user selected a From date filter
         if user_input_date_from != min_date:
-            date_from = pd.to_datetime(
-                f'{user_input_date_from.year}-{user_input_date_from.month}-{user_input_date_from.day} 00:00:00')
-            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['datetime'] >= date_from)]
+            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['date'] >= user_input_date_from)]
 
+        # If user selected a To date filter
         if user_input_date_to != max_date:
-            date_to = pd.to_datetime(
-                f'{user_input_date_to.year}-{user_input_date_to.month}-{user_input_date_to.day} 23:59:59')
-            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['datetime'] <= date_to)]
+            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['date'] <= user_input_date_to)]
+
+        # Exception catching: if user_input_date_from > than user_input_date_to
+        if user_input_date_from > user_input_date_to:
+            st.warning(
+                "The To date must be greater than the From date. Please reselect appropriate dates and click submit.")
+
+        # Exception catching: if data is not available
+        if len(filtered_agg_df) == 0:
+            st.warning('Data is not available for selected dates. Please reselect appropriate dates and click submit.')
 
         # If form is submitted, plot graph
         if trend_form_submitted:
-            plot = plot_graph(filtered_agg_df, user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
+            plot = plot_graph(filtered_agg_df.drop(columns=['date']), user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
             st.write(plot)
 
     if choice == 'Data':
