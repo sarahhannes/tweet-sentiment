@@ -1024,7 +1024,9 @@ def main():
         # Get only data up to selected_week
         filtered_agg_df = agg_df.loc[(agg_df['datetime'] <= f'{selected_week.year}-{selected_week.month}-{selected_week.day} 23:59:59')].copy()
         # Change column type
-        filtered_agg_df['datetime'] = pd.to_datetime(filtered_agg_df['datetime'])
+        #filtered_agg_df['datetime'] = pd.to_datetime(filtered_agg_df['datetime'])
+        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(
+            lambda x: pd.to_datetime(x).tz_localize('GMT').tz_convert(local_tz))
 
         # Get min and max dates from df
         df_min_date = min(df['datetime'])
