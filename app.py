@@ -1023,11 +1023,22 @@ def main():
         agg_df = agg_df.rename(columns=y_colname)
         # Get only data up to selected_week
         filtered_agg_df = agg_df.loc[(agg_df['datetime'] <= f'{selected_week.year}-{selected_week.month}-{selected_week.day} 23:59:59')].copy()
+        # Change column type
+        filtered_agg_df['datetime'] = pd.to_datetime(filtered_agg_df['datetime'])
+
+        # Get min and max dates from df
+        df_min_date = min(df['datetime'])
+        min_date = datetime.date(df_min_date.year, df_min_date.month, df_min_date.day)
+        df_max_date = max(df['datetime'])
+        max_date = datetime.date(df_max_date.year, df_max_date.month, df_max_date.day)
 
         # Form to get user input
         with st.form("trend_form"):
             # Initialize columns
             col_t1, col_t2 = st.columns([1,2])
+            # Get user input for date filter
+            user_input_date_from = col_t1.date_input("Filter from date:", min_date)
+            user_input_date_to = col_t2.date_input("Filter to date:", max_date)
             # Get user input for X axis
             user_input_x = col_t1.selectbox("Choose X axis:", x)
             # Get user input for Y axis
@@ -1044,6 +1055,16 @@ def main():
         # If 'Select All' is selected, get all column names
         if 'Select All' in user_input_y:
             user_input_y = ['Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets']
+
+        if user_input_date_from != min_date:
+            date_from = pd.to_datetime(
+                f'{user_input_date_from.year}-{user_input_date_from.month}-{user_input_date_from.day} 00:00:00')
+            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['datetime'] >= date_from)]
+
+        if user_input_date_to != max_date:
+            date_to = pd.to_datetime(
+                f'{user_input_date_to.year}-{user_input_date_to.month}-{user_input_date_to.day} 23:59:59')
+            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['datetime'] <= date_to)]
 
         # If form is submitted, plot graph
         if trend_form_submitted:
