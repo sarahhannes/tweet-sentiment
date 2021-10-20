@@ -3,6 +3,7 @@ import datetime
 import os
 import re
 
+from tzlocal import get_localzone
 from bokeh.models import ColumnDataSource, CustomJS
 from bokeh.models import DataTable, TableColumn, HTMLTemplateFormatter, DateFormatter
 #from dateutil import tz
@@ -766,8 +767,7 @@ def get_tz():
 def main():
 
     # Get user's local timezone
-    # local_tz = get_tz()
-    local_tz = "Asia/Kuala_Lumpur"
+    local_tz = get_localzone()
 
     # Build credential object and connection to google drive
     credentials, drive_service = build_connection()
@@ -1025,7 +1025,7 @@ def main():
         filtered_agg_df = agg_df.loc[(agg_df['datetime'] <= f'{selected_week.year}-{selected_week.month}-{selected_week.day} 23:59:59')].copy()
         # Change column type
         #filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_localize('UTC').tz_convert(local_tz))
-        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_localize('UTC'))
+        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x))
         # Get date column
         filtered_agg_df['date'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).date())
 
