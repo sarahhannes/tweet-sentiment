@@ -422,7 +422,7 @@ def build_connection():
     return credentials, drive_service
 
 
-def get_modified_time(file_id, drive_service, local_tz):
+def get_modified_time(file_id, drive_service, server_tz, local_tz):
     """
     Get latest modified time from file stored in Google Drive folder
 
@@ -442,7 +442,7 @@ def get_modified_time(file_id, drive_service, local_tz):
 
     """
     metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_convert(None).tz_localize('GMT').tz_convert(local_tz)
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_localize(server_tz).tz_convert(local_tz)
     return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour}:{mtime.minute}'
 
 
@@ -767,9 +767,8 @@ def get_tz():
 def main():
 
     # Get user's local timezone
-    local_tz = get_localzone()
-    st.write('local_tz', local_tz)
-    #local_tz = 'Asia/Kuala_Lumpur'
+    server_tz = get_localzone()
+    local_tz = 'Asia/Kuala_Lumpur'
 
     # Build credential object and connection to google drive
     credentials, drive_service = build_connection()
@@ -821,7 +820,7 @@ def main():
             st.write('')
             st.write('')
             st.write('')
-            st.write(get_modified_time(data_file_id, drive_service, local_tz))
+            st.write(get_modified_time(data_file_id, drive_service, server_tz, local_tz))
             
             # If form is submitted
             if sidebar_submit:
