@@ -6,7 +6,6 @@ import re
 from tzlocal import get_localzone
 from bokeh.models import ColumnDataSource, CustomJS
 from bokeh.models import DataTable, TableColumn, HTMLTemplateFormatter, DateFormatter
-#from dateutil import tz
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from gspread_pandas import Spread, Client
@@ -39,7 +38,6 @@ def get_weekstart():
     return today - timedelta(days=today.weekday())
 
 
-#@st.cache
 def load_data_gdrive(data_file_id):
     """
     Load data from Google Drive
@@ -332,7 +330,6 @@ def get_datatable(df, selected_week):
         filtered_df = df[
             (df['date'] >= np.datetime64(week_start)) & (df['date'] <= np.datetime64(week_end))].copy().reset_index()
 
-    
     return filtered_df[['datetime', 'date', 'time', 'polarity', 'tweet', 'link']].sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
 
 
@@ -659,7 +656,6 @@ def plot_graph(df, x, y, chart_type, agg_type):
         'Min number of Tweets': 'min(value):Q',
         'Max number of Tweets': 'max(value):Q'
     }
-    
 
     if chart_type == 'Scatter':
         return alt.Chart(
@@ -739,7 +735,9 @@ def plot_graph(df, x, y, chart_type, agg_type):
 
 def main():
 
-    # Get user's local timezone
+    # Set timezones
+    # get_localzone() will get the timezone of streamlit.io server which runs the app
+    # Therefore, as a workaround, the local timezone is hardcoded
     server_tz = get_localzone()
     local_tz = 'Asia/Kuala_Lumpur'
 
@@ -793,6 +791,7 @@ def main():
             st.write('')
             st.write('')
             st.write('')
+            # Display last update information
             st.write(get_modified_time(data_file_id, drive_service, server_tz, local_tz))
             
             # If form is submitted
@@ -870,8 +869,7 @@ def main():
         plt.axis("off")
         # Display wordcloud
         col_h8.pyplot(fig)
-    
-        
+
         # Create form to receive user input from bokeh datatable
         with st.form("home_form"):
             # Datatable title
@@ -997,8 +995,10 @@ def main():
         agg_df = agg_df.rename(columns=y_colname)
         # Get only data up to selected_week
         filtered_agg_df = agg_df.loc[(agg_df['datetime'] <= f'{selected_week.year}-{selected_week.month}-{selected_week.day} 23:59:59')].copy()
-        # Change column type
-        #filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_localize('UTC').tz_convert(local_tz))
+        # Change timezone (timezone for scraped data is user's local timezone)
+        # Ref: https://github.com/twintproject/twint/issues/234
+        # So to make it correct again, first localize the timezone naive col into local tz
+        # and then convert it into the server tz for correct plot display
         filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_localize(local_tz).tz_convert(server_tz))
         # Get date column
         filtered_agg_df['date'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).date())
@@ -1116,7 +1116,7 @@ def main():
             
             # Get event dict containing data from user input on rendered bokeh_plot
             result_full = streamlit_bokeh_events(bokeh_plot=p_full, events="INDEX_SELECT", key="datetime",
-                                            refresh_on_update=False, debounce_time=0, override_height=420)
+                                                 refresh_on_update=False, debounce_time=0, override_height=420)
     
             # Create form submit button
             data_form_submitted = st.form_submit_button("Send Feedback", help='Tweet polarity is predicted using Sentiment Analysis Model. Help improve polarity accuracy by ☑ checkbox and click Send Feedback to flag any incorrect prediction')
