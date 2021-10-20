@@ -768,6 +768,8 @@ def main():
 
     # Get user's local timezone
     local_tz = get_localzone()
+    st.write('local_tz', local_tz)
+    #local_tz = 'Asia/Kuala_Lumpur'
 
     # Build credential object and connection to google drive
     credentials, drive_service = build_connection()
