@@ -737,33 +737,6 @@ def plot_graph(df, x, y, chart_type, agg_type):
         )
 
 
-def get_tz():
-    """
-    Get user's local timezone
-
-    Returns
-    -------
-    str
-        Region corresponding to user's current timezone eg "Asia/Kuala_Lumpur"
-
-    """
-    now_local = datetime.datetime.now()
-    now_utc = datetime.datetime.utcnow()
-    diff = (now_local - now_utc)
-    days, hours, minutes = diff.days, diff.seconds // 3600, diff.seconds % 3600 / 60.0
-    utc_offset = timedelta(days=days, hours=hours, minutes=minutes)
-
-    now = datetime.datetime.now(pytz.utc)  # current time
-
-    tz_list = [tz.zone for tz in map(pytz.timezone, pytz.all_timezones_set) if
-               now.astimezone(tz).utcoffset() == utc_offset]
-
-    if len(tz_list) == 0:
-        return 'America/New_York'
-    else:
-        return tz_list[0]
-
-
 def main():
 
     # Get user's local timezone
