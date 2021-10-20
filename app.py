@@ -442,7 +442,7 @@ def get_modified_time(file_id, drive_service, server_tz, local_tz):
 
     """
     metadata = drive_service.files().get(fileId=file_id, fields='modifiedTime').execute()
-    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_localize(server_tz).tz_convert(local_tz)
+    mtime = pd.to_datetime(metadata['modifiedTime'], format="%Y-%m-%d %H:%M").tz_convert(server_tz).tz_convert(local_tz)
     return f'Last Updated at {mtime.year}-{mtime.month}-{mtime.day} {mtime.hour}:{mtime.minute}'
 
 
