@@ -429,8 +429,10 @@ def get_modified_time(file_id, drive_service, server_tz, local_tz):
         Unique ID of file stored in Google Drive.
     drive_service : googleapiclient.discovery.Resource
         Initialized Resource to interact with Google Drive API.
+    server_tz : pytz.tzfile.Etc/UTC
+        timezone information for server location.
     local_tz : str
-        Region for timezone eg "Asia/Kuala_Lumpur".
+        Region for user timezone eg "Asia/Kuala_Lumpur".
 
     Returns
     -------
@@ -780,7 +782,7 @@ def main():
             choice = st.selectbox("Navigate to:", ["Home", "Trends", "Data"])
             # Create date input for filtering
             selected_week = st.date_input(
-                "Select KPI for week:", get_weekstart(),
+                "Select KPI for week:", datetime.today(),
                 help='Default to current business week')
             # Create form submit button
             
