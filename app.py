@@ -401,6 +401,14 @@ def build_connection():
     Initialize credentials object and drive_service object to interact with
     Google Drive API.
 
+    Info argument in credentials object is a .toml file stored in streamlit.io.
+    Note that credentials object is initialized in a similar fashion to retrain.load_google_worksheet_from_info().
+    However, one stark differences is that the info argument here is structured in .toml file (saved in streamlit.io);
+    while the latter's info argument is a constructed dict object with some of its values saved in Github secrets.
+    This is because github secrets does not allow storage of any structured file format, therefore the workaround.
+
+    Since app.py will be run entirely from streamlit.io, there is no need to store the .toml file in Github secrets.
+
     Returns
     -------
     credentials : google.oauth2.service_account.Credentials
