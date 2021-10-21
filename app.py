@@ -1,4 +1,5 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime as dt
+from datetime import date, timedelta
 import datetime
 import os
 import re
@@ -34,7 +35,7 @@ def get_weekstart():
         Date, Monday of the current week.
 
     """
-    today = datetime.date.today()
+    today = dt.today()
     return today - timedelta(days=today.weekday())
 
 
@@ -782,7 +783,7 @@ def main():
             choice = st.selectbox("Navigate to:", ["Home", "Trends", "Data"])
             # Create date input for filtering
             selected_week = st.date_input(
-                "Select KPI for week:", datetime.today(),
+                "Select KPI for week:", dt.today(),
                 help='Default to current business week')
             # Create form submit button
             
