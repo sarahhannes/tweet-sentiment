@@ -1,46 +1,31 @@
-import pandas as pd
-import re
+# -*- coding: utf-8 -*-
+"""Clean scraped data.
+
+Usage
+-----
+To be used as part of scheduled Continuous Deployment workflow.
+"""
+
 import pickle
+import re
 
-import fasttext  # Package for Pre-trained Language Detection Model
-import gdown  # Package to download files form google drive
-
-import sklearn
 from sklearn.preprocessing import LabelEncoder
-from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import BernoulliNB
-
+import sklearn
 from nltk.stem import WordNetLemmatizer
 import nltk
+import fasttext  # Package for Pre-trained Language Detection Model
+import gdown  # Package to download files form google drive
+import pandas as pd
+
+from text_preprocessing import remove_link_lemma
+
+
 nltk.download('wordnet')
 wnl = WordNetLemmatizer()
-
-
-# Pre-processing functions
-def lemmatizing(text):
-    """
-    input: string
-    Lemmatize input using nltk WordNetLemmatizer (eg wolves -> wolf)
-    output: string
-    """
-    return ' '.join([wnl.lemmatize(word) for word in text.split(' ')])
-
-
-def remove_link(text):
-    """
-    input: string
-    Remove links from input.
-    output: string
-    """
-    pattern = re.compile('htt.*', re.IGNORECASE)
-    return ' '.join([word for word in text.split(' ') if pattern.search(word) == None])
-
-
-def remove_link_lemma(text):
-    return remove_link(lemmatizing(text))
-
 
 def get_stats(tweet):
     """
