@@ -32,12 +32,12 @@ def get_weekstart(selected_date=dt.today()):
     Parameters
     ----------
     selected_date : datetime.date, optional
-        Date to get the Monday of the week from. The default is dt.today().
+        Any date/ day of the week. The default is dt.today().
 
     Returns
     -------
     datetime.date
-        Date of the Monday of selected_date.
+        Date of the Monday of week of selected_date.
 
     """
     return selected_date - timedelta(days=selected_date.weekday())
