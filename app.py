@@ -25,18 +25,22 @@ import gspread
 st.set_page_config(page_title='Twitter Watcher', layout='wide', page_icon='📮')
 
 
-def get_weekstart():
+def get_weekstart(selected_date=dt.today()):
     """
-    Get date of week start
+    Returns Monday of the selected_date week
+
+    Parameters
+    ----------
+    selected_date : datetime.date, optional
+        Date to get the Monday of the week from. The default is dt.today().
 
     Returns
     -------
     datetime.date
-        Date, Monday of the current week.
+        Date of the Monday of selected_date.
 
     """
-    today = dt.today()
-    return today - timedelta(days=today.weekday())
+    return selected_date - timedelta(days=selected_date.weekday())
 
 
 def load_data_gdrive(data_file_id):
@@ -334,7 +338,7 @@ def get_datatable(df, selected_week):
     return filtered_df[['datetime', 'date', 'time', 'polarity', 'tweet', 'link']].sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
 
 
-def update_datatable(cust_tweets, selected_week):
+def update_datatable(cust_tweets, selected_week, choice):
     """
     Slice to obtain only data for selected_week and update value in session_state
 
@@ -344,13 +348,19 @@ def update_datatable(cust_tweets, selected_week):
         Dataframe containing data to be sliced.
     selected_week : datetime.date
         Date from user input.
+    choice : str
+        Name of page user wish to navigate to.
 
     Returns
     -------
     None.
 
     """
-    st.session_state['datatable'] = get_datatable(cust_tweets, selected_week)
+    if choice != 'Data':
+        st.session_state['datatable'] = get_datatable(cust_tweets, selected_week)
+    else:
+        weekstart = get_weekstart(selected_week)
+        st.session_state['datatable'] = get_datatable(cust_tweets, weekstart)
 
 
 def load_google_worksheet(worksheet):
@@ -401,6 +411,7 @@ def build_connection():
     Initialize credentials object and drive_service object to interact with
     Google Drive API.
 
+    ref: https://google-auth.readthedocs.io/en/master/_modules/google/oauth2/service_account.html#Credentials.from_service_account_info
     Info argument in credentials object is a .toml file stored in streamlit.io.
     Note that credentials object is initialized in a similar fashion to retrain.load_google_worksheet_from_info().
     However, one stark differences is that the info argument here is structured in .toml file (saved in streamlit.io);
@@ -797,7 +808,7 @@ def main():
             
             sidebar_submit = st.form_submit_button('Go!',
                                        on_click=update_datatable, # Updates datatable on click
-                                       args=(cust_tweets, selected_week)) # Arguments for update_datatable function
+                                       args=(cust_tweets, selected_week, choice)) # Arguments for update_datatable function
 
             st.write('')
             st.write('')
