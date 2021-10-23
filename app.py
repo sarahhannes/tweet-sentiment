@@ -1025,11 +1025,11 @@ def main():
         # Get date column
         filtered_agg_df['date'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).date())
 
-        # Get min and max dates from df
-        df_min_date = min(df['datetime'])
-        min_date = datetime.date(df_min_date.year, df_min_date.month, df_min_date.day)
+        # Get max date from scraped data
         df_max_date = max(df['datetime'])
         max_date = datetime.date(df_max_date.year, df_max_date.month, df_max_date.day)
+        # Get the date of Monday of max_date
+        min_date = get_weekstart(max_date)
 
         # Form to get user input
         with st.form("trend_form"):
