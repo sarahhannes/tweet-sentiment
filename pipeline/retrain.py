@@ -38,7 +38,7 @@ def load_google_worksheet_from_info():
     """
     This function directly:
         - Obtains credentials from Github secrets
-        - Builds credentials object to connect with Googlesheet containing collected user input via streamlit app.
+        - Builds credentials object to connect with Googlesheet containing collected user input via streamlit app
         - Accesses the Googlesheet
         - Loads all data from the Googlesheet into pandas
     
@@ -53,10 +53,10 @@ def load_google_worksheet_from_info():
     info = {
       'type': "service_account",
       'project_id': "quixotic-card-325716",
-      'private_key_id': os.environ['GSA_PRIVATE_KEY_ID'], # save in github secrets
-      'private_key': os.environ['GSA_PRIVATE_KEY'], # save in github secrets
+      'private_key_id': os.environ['GSA_PRIVATE_KEY_ID'],
+      'private_key': os.environ['GSA_PRIVATE_KEY'],
       'client_email': "tweet-sentiment@quixotic-card-325716.iam.gserviceaccount.com",
-      'client_id': os.environ['GSA_CLIENT_ID'], # save in github secrets
+      'client_id': os.environ['GSA_CLIENT_ID'],
       'auth_uri': "https://accounts.google.com/o/oauth2/auth",
       'token_uri': "https://oauth2.googleapis.com/token",
       'auth_provider_x509_cert_url': "https://www.googleapis.com/oauth2/v1/certs",
@@ -74,7 +74,7 @@ def load_google_worksheet_from_info():
     gc.session = AuthorizedSession(scoped_credentials)
   
     # Get Googlesheet url from stored github secrets
-    sheet_url = os.environ["GSA_PRIVATE_GSHEETS_URL"] # save in github secrets
+    sheet_url = os.environ["GSA_PRIVATE_GSHEETS_URL"]
   
     # Access the Googlesheet via shared link
     sheet = gc.open_by_url(sheet_url)
@@ -199,10 +199,10 @@ if __name__ == "__main__":
     # 9: Update model pickle
     pipe_final = Pipeline([
               ('vectorizer', tfidf),
-              ('nb', model_retrained_new.steps[0][1]) # save the fitted model2 from previous pipe
+              ('nb', model_retrained_new.steps[0][1]) # save the fitted model from previous pipe
                        ])
     
-    # Save built model directly to google drive path
+    # 10: Save built model
     path = './'
     pickle_save = open(path + 'model.pickle', 'wb')
     pickle.dump(pipe_final, pickle_save)
