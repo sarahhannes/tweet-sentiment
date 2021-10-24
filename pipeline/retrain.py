@@ -34,7 +34,8 @@ from text_preprocessing import remove_link_lemma
 nltk.download('wordnet')
 wnl = WordNetLemmatizer()
 
-def load_google_worksheet_from_info():
+
+def load_google_worksheet_from_info(private_key_id, private_key, client_id, sheet_url):
     """
     This function directly:
         - Obtains credentials from Github secrets
@@ -43,20 +44,31 @@ def load_google_worksheet_from_info():
         - Loads all data from the Googlesheet into pandas
     
     See app.build_connection() for more info.
+    
+    Parameters
+    ----------
+    private_key_id : str
+        Required credential to access Google Drive. Stored in Github secrets.
+    private_key : str
+        Required credential to access Google Drive. Stored in Github secrets.
+    client_id : str
+        Required credential to access Google Drive. Stored in Github secrets.
+    sheet_url : str
+        Link to Google sheet. Stored in Github secrets.
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    pandas.core.frame.DataFrame
+        Dataframe containing all rows from google worksheet returned by app.load_google_worksheet().
 
     """
     info = {
       'type': "service_account",
       'project_id': "quixotic-card-325716",
-      'private_key_id': os.environ['GSA_PRIVATE_KEY_ID'],
-      'private_key': os.environ['GSA_PRIVATE_KEY'],
+      'private_key_id': private_key_id,
+      'private_key': private_key,
       'client_email': "tweet-sentiment@quixotic-card-325716.iam.gserviceaccount.com",
-      'client_id': os.environ['GSA_CLIENT_ID'],
+      'client_id': client_id,
       'auth_uri': "https://accounts.google.com/o/oauth2/auth",
       'token_uri': "https://oauth2.googleapis.com/token",
       'auth_provider_x509_cert_url': "https://www.googleapis.com/oauth2/v1/certs",
@@ -74,7 +86,7 @@ def load_google_worksheet_from_info():
     gc.session = AuthorizedSession(scoped_credentials)
   
     # Get Googlesheet url from stored github secrets
-    sheet_url = os.environ["GSA_PRIVATE_GSHEETS_URL"]
+    sheet_url = sheet_url
   
     # Access the Googlesheet via shared link
     sheet = gc.open_by_url(sheet_url)
@@ -84,6 +96,11 @@ def load_google_worksheet_from_info():
 
 
 if __name__ == "__main__":
+
+    private_key_id = os.environ['GSA_PRIVATE_KEY_ID']
+    private_key = os.environ['GSA_PRIVATE_KEY']
+    client_id = os.environ['GSA_CLIENT_ID']
+    sheet_url = os.environ["GSA_PRIVATE_GSHEETS_URL"]
     
     # 1: Load data
     # File ID for Tweet data stored in Google Drive
@@ -91,7 +108,7 @@ if __name__ == "__main__":
     # Load all scraped data
     df = load_data_gdrive(data_file_id)[['tweet']]
     # Load data from user-validation google sheet (collected from streamlit app)
-    df_googlesheet = load_google_worksheet_from_info()
+    df_googlesheet = load_google_worksheet_from_info(private_key_id, private_key, client_id, sheet_url)
     
     # 2: Preprocess google sheet
     # 2a: Remove duplicates
