@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""Append newly scraped data to existing data stored in Google Drive.
+
+Usage
+-----
+To be used as part of scheduled Continuous Deployment workflow.
+"""
+
 import pandas as pd
 import gdown
 

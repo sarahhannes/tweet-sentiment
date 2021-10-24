@@ -1,14 +1,20 @@
+# -*- coding: utf-8 -*-
+"""Update file to Google Drive.
 
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-import google_auth_oauthlib
+Usage
+-----
+To be used as part of scheduled Continuous Deployment workflow.
+"""
+
+import json
+import os
 
 from apiclient import errors
 from apiclient.http import MediaFileUpload
-
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+import google_auth_oauthlib
 import requests
-import json
-import os
 
 
 def update_file(filename):
