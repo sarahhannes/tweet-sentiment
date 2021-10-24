@@ -1058,10 +1058,14 @@ def main():
         # If user selected a From date filter
         if user_input_date_from != min_date:
             filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['date'] >= user_input_date_from)]
+        else:
+            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['date'] >= min_date)]
 
         # If user selected a To date filter
         if user_input_date_to != max_date:
             filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['date'] <= user_input_date_to)]
+        else:
+            filtered_agg_df = filtered_agg_df.loc[(filtered_agg_df['date'] <= max_date)]
 
         # Exception catching: if user_input_date_from > than user_input_date_to
         if user_input_date_from > user_input_date_to:
