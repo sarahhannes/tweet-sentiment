@@ -2,6 +2,16 @@
 
 """Retrains and updates exisiting sentiment analysis model.
 
+High-Level Overview
+-----
+1. Load data
+2. Polarity classification using TextBlob and VaderSentiment as class label
+3. Class label consolidation
+4. Resample data (SMOTE oversampling approach)
+5. Train model
+6. Pickle model
+7. Update model.pickle in Google Drive
+
 Usage
 -----
 To be used as part of scheduled Continuous Improvement workflow.
