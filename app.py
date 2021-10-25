@@ -349,7 +349,9 @@ def get_datatable(df, selected_week):
 
 def update_datatable(cust_tweets, selected_week, choice):
     """
-    Slice to obtain only data for selected_week and update value in session_state
+    Slice to obtain only data for selected_week and update value in session_state.
+    If `choice` of page navigation is Data, update st.session_state['datatable'] with 7 days latest data;
+    Else, update session_state object with data on `selected_week` only.
 
     Parameters
     ----------
@@ -365,11 +367,11 @@ def update_datatable(cust_tweets, selected_week, choice):
     None.
 
     """
-    if choice != 'Data':
-        st.session_state['datatable'] = get_datatable(cust_tweets, selected_week)
-    else:
-        weekstart = get_weekstart(selected_week)
+    if choice == 'Data':
+        weekstart = selected_week - timedelta(days=7)
         st.session_state['datatable'] = get_datatable(cust_tweets, weekstart)
+    else:
+        st.session_state['datatable'] = get_datatable(cust_tweets, selected_week)
 
 
 def load_google_worksheet(worksheet):
@@ -815,9 +817,7 @@ def main():
                 help='Default to current business week')
             # Create form submit button
             
-            sidebar_submit = st.form_submit_button('Go!',
-                                       on_click=update_datatable, # Updates datatable on click
-                                       args=(cust_tweets, selected_week, choice)) # Arguments for update_datatable function
+            sidebar_submit = st.form_submit_button('Go!')
 
             st.write('')
             st.write('')
@@ -827,6 +827,8 @@ def main():
             
             # If form is submitted
             if sidebar_submit:
+                # Update datatable with user selected input
+                update_datatable(cust_tweets, selected_week, choice)
                 # Save value from session state object into variable
                 datatable = st.session_state['datatable']   
 
