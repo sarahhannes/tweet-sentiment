@@ -186,17 +186,20 @@ def hashtags_polarity(df, selected_week):
         Words from Negative Tweets hashtags.
 
     """
-    
+    # Sort df by datetime in descending order
+    df.sort_values(by=['datetime'], ascending=False).reset_index(drop=True)
+
     # Unpack year, weeknum and day from selected date
     cw_year, cw_weeknum, cw_day = selected_week.isocalendar()
 
     # Slice df based on selected date and polarity, then save as new df
     positive_df = df.loc[(df['week'] == cw_weeknum) & (df['year'] == cw_year) & (df['polarity'] == 'positive')].copy()
     negative_df = df.loc[(df['week'] == cw_weeknum) & (df['year'] == cw_year) & (df['polarity'] == 'negative')].copy()
-    
+
     # If either one is empty, get the most recent data
     if len(positive_df) == 0:
-        top2_weeknum = df['week'].unique()[-2]
+        # Get the second top week number
+        top2_weeknum = df['week'].unique()[1]
         max_year = max(df['year'])
 
         # slice to get the most recent week -1, year
@@ -204,11 +207,14 @@ def hashtags_polarity(df, selected_week):
             (df['week'] == top2_weeknum) & (df['year'] == max_year) & (df['polarity'] == 'positive')].copy()
 
     if len(negative_df) == 0:
-        top2_weeknum = df['week'].unique()[-2]
+        # Get the second top week number
+        top2_weeknum = df['week'].unique()[1]
         max_year = max(df['year'])
+
+        # slice to get the most recent week -1, year
         negative_df = df.loc[
             (df['week'] == top2_weeknum) & (df['year'] == max_year) & (df['polarity'] == 'negative')].copy()
-    
+
     # Combine hashtags into list of words
     positive_list = positive_df['hashtags'].apply(
         lambda x: "".join(x).replace("'", "").replace("[", "").replace("]", "").replace(",", "").split())
@@ -219,6 +225,9 @@ def hashtags_polarity(df, selected_week):
     positive_words = (' ').join([item for sublist in positive_list for item in sublist])
     negative_words = (' ').join([item for sublist in negative_list for item in sublist])
 
+    # Placeholder to ensure no 0 len string
+    positive_words += ' DHL'
+    negative_words += ' DHL'
     return positive_words, negative_words
 
 
