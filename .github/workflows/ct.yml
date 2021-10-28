@@ -37,6 +37,8 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           export_default_credentials: true
 
+      - uses: google-github-actions/upload-cloud-storage@main
+      
       - name: Run train.py
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
