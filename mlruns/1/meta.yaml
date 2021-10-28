@@ -1,0 +1,4 @@
+artifact_location: file:///D:/a/tweet-sentiment/tweet-sentiment/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: SentimentAnalysis
