@@ -30,9 +30,11 @@ jobs:
             pip install -r requirements.txt
 
       - name: Setup Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0.2.0
         with:
           service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          service_account_email: ${{ '296087810973-compute@developer.gserviceaccount.com' }}
+          project_id: ${{ 'quixotic-card-325716' }}
           export_default_credentials: true
 
       - name: Run train.py
