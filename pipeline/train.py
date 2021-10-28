@@ -284,7 +284,7 @@ if __name__ == '__main__':
 
     # Get secrets from env
     private_key_id = os.environ['GSA_PRIVATE_KEY_ID']
-    private_key = os.environ['GSA_PRIVATE_KEY']
+    private_key = os.environ['GSA_PRIVATE_KEY'].replace('\\n', '\n')
     client_id = os.environ['GSA_CLIENT_ID']
     sheet_url = os.environ["GSA_PRIVATE_GSHEETS_URL"]
 
