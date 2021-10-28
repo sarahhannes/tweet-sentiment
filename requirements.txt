@@ -47,7 +47,6 @@ google_api_python_client==2.26.1
 protobuf==3.18.1
 python_dateutil==2.8.2
 pytz>=2021.3
-app==0.0.1
 #gdown==4.2.0
 #gspread==4.0.1
 imbalanced_learn==0.7.0
@@ -59,7 +58,6 @@ mlflow==1.20.2
 #protobuf==3.19.0
 #requests==2.26.0
 #scikit_learn==1.0.1
-text_preprocessing==0.1.0
 textblob==0.15.3
 vaderSentiment==3.3.2
 google-cloud-storage==1.19.0
