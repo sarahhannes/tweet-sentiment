@@ -6,6 +6,7 @@ Usage
 To be used as part of scheduled Continuous Deployment workflow.
 """
 
+import os
 import pickle
 import re
 
@@ -20,7 +21,11 @@ import nltk
 import fasttext  # Package for Pre-trained Language Detection Model
 import gdown  # Package to download files form google drive
 import pandas as pd
+import mlflow.sklearn
+import mlflow.pyfunc
+import mlflow
 
+from load_model import get_model
 from text_preprocessing import remove_link_lemma
 
 
@@ -66,15 +71,7 @@ if __name__ == "__main__":
     df = pd.read_fwf(NEWDATA_URL, header=None, widths=widths, encoding="utf8")
 
     ## Load sentiment analysis model
-    MODEL_FILEID = '1ydeM6Tiamck5sF8oMDThZIRb0xQu7Nqd'
-    MODEL_URL = 'https://drive.google.com/uc?id=' + MODEL_FILEID
-    MODEL_OUTPUT = 'model.pickle'
-    # Download model from google drive
-    gdown.download(MODEL_URL, MODEL_OUTPUT, quiet=False)
-    # Load model to session
-    infile = open(MODEL_OUTPUT, 'rb')
-    model = pickle.load(infile)
-    infile.close()
+    model = get_model()
 
     ## Load fastText pre-trained language detection model
     FASTTEXT_FILE_ID = '12JgI89VS7Pkn2akgAs7ZsPFni5HtLvxs'
