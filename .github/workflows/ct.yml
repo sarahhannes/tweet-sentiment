@@ -39,7 +39,6 @@ jobs:
       
       - name: Run train.py
         env:
-#           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
           GSA_PRIVATE_KEY_ID: ${{ secrets.GSA_PRIVATE_KEY_ID }}
@@ -48,18 +47,6 @@ jobs:
           GSA_PRIVATE_GSHEETS_URL: ${{ secrets.GSA_PRIVATE_GSHEETS_URL }}
         run: |
             python pipeline/train.py
-
-      - name: Commit files
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git pull
-          git add .
-          git commit -m "CT - Train model $(date)"
-          git push --set-upstream origin dev
-        env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
   
   Deploy:
     needs: Train
@@ -83,22 +70,17 @@ jobs:
             python -m pip install --upgrade pip
             pip install -r requirements.txt
       
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          service_account_email: ${{ secrets.GCP_COMPUTE_ENGINE_EMAIL  }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+          
       - name: Run deploy.py
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
         run: |
             python pipeline/deploy.py
-
-      - name: Commit files
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git pull
-          git add .
-          git commit -m "CT - Deploy trained model $(date)"
-          git push --set-upstream origin dev
-        env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
-          username: github-actions
