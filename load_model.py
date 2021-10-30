@@ -19,7 +19,7 @@ def get_model():
     """
 
     experiment_name = "SentimentAnalysis"
-    tracking_uri = 'http://34.66.179.103:80'
+    tracking_uri = os.environ.get('MLFLOW_TRACKING_URI')
     registered_model_name = "SentimentAnalysisClassifier"
     stage = 'Production'
 
