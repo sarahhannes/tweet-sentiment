@@ -24,13 +24,15 @@ def update_file(filename):
         if filename == 'data.txt':
             file_id = '1XiABfco1-NpSwSjl32BAUS_HqPrBFYzD'
             mimetype = 'text/plain'
+            file_metadata = {'name': filename}
 
         elif filename == 'model.pickle':
             filename = pathlib.Path(filename).absolute()
             file_id = '1ydeM6Tiamck5sF8oMDThZIRb0xQu7Nqd'
             mimetype = 'application/octet-stream'
+            file_metadata = {'name': 'model.pickle'}
 
-        file_metadata = {'name': filename}
+#         file_metadata = {'name': filename}
 
         media = MediaFileUpload(filename, mimetype=mimetype)
         file = drive_service.files().update(body=file_metadata,
