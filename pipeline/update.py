@@ -8,6 +8,7 @@ To be used as part of scheduled Continuous Deployment workflow.
 
 import json
 import os
+import pathlib
 
 from apiclient import errors
 from apiclient.http import MediaFileUpload
@@ -25,6 +26,7 @@ def update_file(filename):
             mimetype = 'text/plain'
 
         elif filename == 'model.pickle':
+            filename = pathlib.Path(filename).absolute()
             file_id = '1ydeM6Tiamck5sF8oMDThZIRb0xQu7Nqd'
             mimetype = 'application/octet-stream'
 
