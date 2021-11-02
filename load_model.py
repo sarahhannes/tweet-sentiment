@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Load model staged as `Production` on MLFlow."""
+"""Load `Production` model on MLFlow and save as pickle object."""
 
 import os
+import pickle
 import mlflow.sklearn
 import mlflow.pyfunc
 import mlflow
@@ -31,3 +32,12 @@ def get_model():
 
     model = mlflow.pyfunc.load_model(model_uri=f"models:/{registered_model_name}/{stage}")
     return model
+
+
+if __name__ == '__main__':
+    
+    model = get_model()
+    path = './'
+    pickle_save = open(path + 'model.pickle', 'wb')
+    pickle.dump(model, pickle_save)
+    pickle_save.close()
