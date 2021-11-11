@@ -45,7 +45,7 @@ jobs:
           GSA_CLIENT_ID: ${{ secrets.GSA_CLIENT_ID }}
           GSA_PRIVATE_GSHEETS_URL: ${{ secrets.GSA_PRIVATE_GSHEETS_URL }}
         run: |
-            python load_model.py
+            python pipeline/load_model.py
             
       - name: Commit files
         run: |
