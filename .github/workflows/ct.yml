@@ -86,3 +86,57 @@ jobs:
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
         run: |
             python pipeline/deploy.py
+  
+  Load_model:
+    needs: Deploy
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Singapore"
+          timezoneMacos: "Asia/Singapore"
+          timezoneWindows: "Singapore Standard Time"
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          service_account_email: ${{ secrets.GCP_COMPUTE_ENGINE_EMAIL  }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+      
+      - name: Run load_model.py
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+          GSA_PRIVATE_KEY_ID: ${{ secrets.GSA_PRIVATE_KEY_ID }}
+          GSA_PRIVATE_KEY: ${{ secrets.GSA_PRIVATE_KEY }}
+          GSA_CLIENT_ID: ${{ secrets.GSA_CLIENT_ID }}
+          GSA_PRIVATE_GSHEETS_URL: ${{ secrets.GSA_PRIVATE_GSHEETS_URL }}
+        run: |
+            python pipeline/load_model.py
+            
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git pull
+          git add model.pickle
+          git commit -m "CT - Load `production` model $(date)"
+          git push --set-upstream origin dev
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
