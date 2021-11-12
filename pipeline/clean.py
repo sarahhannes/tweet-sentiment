@@ -67,9 +67,11 @@ def load_model():
     Load pickle object from github repo.
     output: mlflow.pyfunc.PyFuncModel
     """
-    model_link = 'https://github.com/SarahHannes/tweet-sentiment/blob/dev/model.pickle?raw=true'
-    model_file = BytesIO(requests.get(model_link).content)
-    model = pickle.load(model_file)
+    with open('./model.pickle', 'rb') as f:
+        model = pickle.load(f)
+    # model_link = 'https://github.com/SarahHannes/tweet-sentiment/blob/dev/model.pickle?raw=true'
+    # model_file = BytesIO(requests.get(model_link).content)
+    # model = pickle.load(model_file)
     return model
 
 if __name__ == "__main__":
