@@ -37,7 +37,5 @@ def get_model():
 if __name__ == '__main__':
     
     model = get_model()
-    path = './'
-    pickle_save = open(path + 'model.pickle', 'wb')
-    pickle.dump(model, pickle_save)
-    pickle_save.close()
+    with open('model.pickle', 'wb') as f:
+        pickle.dump(model, f)
