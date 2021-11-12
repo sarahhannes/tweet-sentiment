@@ -27,7 +27,11 @@ def update_file(filename):
             file_metadata = {'name': filename}
 
         elif filename == 'model.pickle':
-            filename = pathlib.Path(filename).absolute()
+            with open('./model.pickle', 'rb') as f:
+                model = pickle.load(f)
+            
+            filename = model
+            #filename = pathlib.Path(filename).absolute()
             file_id = '1ydeM6Tiamck5sF8oMDThZIRb0xQu7Nqd'
             mimetype = 'application/octet-stream'
             file_metadata = {'name': 'model.pickle'}
