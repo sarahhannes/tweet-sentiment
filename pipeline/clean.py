@@ -62,17 +62,6 @@ def get_hashtags(tweet):
     """
     return list(set([re.sub(r'[^0-9a-zA-Z]', '', tweet) for tweet in tweet.split() if tweet.startswith("#")]))
 
-def load_model():
-    """
-    Load pickle object from github repo.
-    output: mlflow.pyfunc.PyFuncModel
-    """
-    with open('./model.pickle', 'rb') as f:
-        model = pickle.load(f)
-    # model_link = 'https://github.com/SarahHannes/tweet-sentiment/blob/dev/model.pickle?raw=true'
-    # model_file = BytesIO(requests.get(model_link).content)
-    # model = pickle.load(model_file)
-    return model
 
 if __name__ == "__main__":
 
@@ -83,7 +72,15 @@ if __name__ == "__main__":
     df = pd.read_fwf(NEWDATA_URL, header=None, widths=widths, encoding="utf8")
 
     ## Load sentiment analysis model
-    model = load_model()
+    MODEL_FILEID = '1ydeM6Tiamck5sF8oMDThZIRb0xQu7Nqd'
+    MODEL_URL = 'https://drive.google.com/uc?id=' + MODEL_FILEID
+    MODEL_OUTPUT = 'model.pickle'
+    # Download model from google drive
+    gdown.download(MODEL_URL, MODEL_OUTPUT, quiet=False)
+    # Load model to session
+    infile = open(MODEL_OUTPUT, 'rb')
+    model = pickle.load(infile)
+    infile.close()
 
     ## Load fastText pre-trained language detection model
     FASTTEXT_FILE_ID = '12JgI89VS7Pkn2akgAs7ZsPFni5HtLvxs'
