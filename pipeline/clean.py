@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Clean scraped data.
+"""Clean and predict sentiment polarity of scraped Twitter data.
 
 Usage
 -----
 To be used as part of scheduled Continuous Deployment workflow.
 """
 
+from io import BytesIO
 import os
 import pickle
 import re
+import requests
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -25,7 +27,6 @@ import mlflow.sklearn
 import mlflow.pyfunc
 import mlflow
 
-from load_model import get_model
 from text_preprocessing import remove_link_lemma
 
 
@@ -61,6 +62,15 @@ def get_hashtags(tweet):
     """
     return list(set([re.sub(r'[^0-9a-zA-Z]', '', tweet) for tweet in tweet.split() if tweet.startswith("#")]))
 
+def load_model():
+    """
+    Load pickle object from github repo.
+    output: mlflow.pyfunc.PyFuncModel
+    """
+    model_link = 'https://github.com/SarahHannes/tweet-sentiment/blob/dev/model.pickle?raw=true'
+    model_file = BytesIO(requests.get(model_link).content)
+    model = pickle.load(model_file)
+    return model
 
 if __name__ == "__main__":
 
@@ -71,7 +81,7 @@ if __name__ == "__main__":
     df = pd.read_fwf(NEWDATA_URL, header=None, widths=widths, encoding="utf8")
 
     ## Load sentiment analysis model
-    model = get_model()
+    model = load_model()
 
     ## Load fastText pre-trained language detection model
     FASTTEXT_FILE_ID = '12JgI89VS7Pkn2akgAs7ZsPFni5HtLvxs'
