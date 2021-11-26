@@ -89,6 +89,10 @@ def clean_df(df):
     df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
     # Transform time column to datetime.time format
     df['time'] = pd.to_datetime(df['time'], format='%H:%M:%S').dt.time
+    # Double check for NaT - if NaT, convert to 00:00:00
+    for x in df['time'][pd.Series(df['time']).isna()].index:
+        df.at[x, 'time'] = datetime.time(0,0,0)
+
     # Combine columns to get datetime
     df['datetime'] = df.apply(lambda row: datetime.datetime.combine(row['date'], row['time']), axis=1)
     # Get year
