@@ -4,13 +4,14 @@ import datetime
 import os
 import re
 
-from tzlocal import get_localzone
+from altair import datum
 from bokeh.models import ColumnDataSource, CustomJS
 from bokeh.models import DataTable, TableColumn, HTMLTemplateFormatter, DateFormatter
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from gspread_pandas import Spread, Client
 from streamlit_bokeh_events import streamlit_bokeh_events
+from tzlocal import get_localzone
 from wordcloud import WordCloud
 import altair as alt
 import matplotlib.pyplot as plt
@@ -651,7 +652,7 @@ def get_agg_data(cust_tweets, dhl_tweets):
     return pd.pivot_table(sum_df, values=['replies', 'retweets', 'likes', 'count_dhl_tweets', 'polarity_negative_mentions', 'polarity_positive_mentions', 'count_cust_tweets'], index=['datetime', 'week', 'year'], aggfunc=np.sum, fill_value=0)
 
 
-def plot_graph(df, x, y, chart_type, agg_type):
+def plot_custom_graph(df, x, y, chart_type, agg_type):
     """
     Plot altair chart from user input
 
@@ -769,6 +770,251 @@ def plot_graph(df, x, y, chart_type, agg_type):
             height=150
         )
 
+def agg_by_period(agg_df, groupby_var):
+    """
+    Aggregate numerical data by `groupby_var`. Calculate percentage and percentage change for all KPI categories.
+
+    Parameters
+    ----------
+    agg_df : pandas.core.frame.DataFrame
+        Dataframe returned by `get_agg_data(cust_tweets, dhl_tweets)`.
+    groupby_var : str
+        Variable to aggregate the data by. One of ['year', 'quarter', 'month', 'week', 'day'].
+
+    Returns
+    -------
+    agg_df_period : pandas.core.frame.DataFrame
+        Dataframe containing numerical data agggreagated by `groupby_var`, within columns [`groupby_var`, 'variable', 'value', 'sum', 'percentage', 'pct_change'].
+
+    """
+    # Transform datetime column to datetime format
+    agg_df['datetime'] = pd.to_datetime(agg_df['datetime'])
+    
+    # Get respective time period from datetime column
+    if groupby_var == 'quarter':
+        agg_df['quarter'] = agg_df['datetime'].apply(lambda x: x.quarter)
+    elif groupby_var == 'month':
+        agg_df['month'] = agg_df['datetime'].apply(lambda x: x.month)
+    elif groupby_var == 'day':
+        agg_df['day'] = agg_df['datetime'].apply(lambda x: x.day)
+        
+    # Aggregate by `groupby_var` by summation
+    agg_df_period = agg_df.melt(id_vars=groupby_var, value_vars=['Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets']).groupby([groupby_var, 'variable'])['value'].sum().reset_index()
+    
+    # Get totals, save in a new dataframe and set index to KPI categories
+    sum_df = agg_df_period.groupby(['variable'])['value'].sum().reset_index()
+    sum_df = sum_df.set_index('variable')
+    
+    # Add column for totals for each respectives KPI categories
+    agg_df_period['sum'] = agg_df_period.apply(lambda row: sum_df.at[row['variable'], 'value'], axis=1)
+    
+    # Calculate percentage and percentage change
+    agg_df_period['percentage'] = agg_df_period.apply(lambda row: row['value']/row['sum']*100, axis=1)
+    agg_df_period['pct_change'] = agg_df_period.groupby(['variable'])['value'].pct_change(fill_method='ffill')*100
+    return agg_df_period
+
+
+def get_summary_df(cust_tweets, dhl_tweets, groupby_user_input):
+    """
+    Create summary dataframe by aggregating `cust_tweets` and `dhl_tweets` based on `groupby_user_input`
+
+    Parameters
+    ----------
+    cust_tweets : pandas.core.frame.DataFrame
+        Dataframe returned by `get_cust_tweet(df, dhl_acc)`.
+    dhl_tweets : pandas.core.frame.DataFrame
+        Dataframe returned by `get_dhl_tweet(df, dhl_acc)`.
+    groupby_user_input : str
+        Variable to aggregate the data by, based on user input. One of ['Year', 'Quarter', 'Month', 'Week', 'Day'].
+
+    Returns
+    -------
+    grouped_summary_merged : pandas.core.frame.DataFrame
+        Merged dataframe containing data aggregated by `groupby_user_input`, within columns [`groupby_user_input`, 'variable', 'value', 'sum', 'percentage', 'pct_change', 'Tweet'].
+
+    """
+
+    agg_df = get_agg_data(cust_tweets, dhl_tweets).reset_index()
+    groupby_var = groupby_user_input.lower()
+    y_colname = {'count_cust_tweets': 'Total Customer Mentions',
+                'count_dhl_tweets': 'Total DHL Tweets',
+                'likes': 'Likes',
+                'polarity_negative_mentions': 'Negative Mentions',
+                'polarity_positive_mentions': 'Positive Mentions',
+                'replies': 'Replies',
+                'retweets': 'Retweets'}
+
+    agg_df = agg_df.rename(columns=y_colname)
+    agg_df_period = agg_by_period(agg_df, groupby_var)
+
+    # Get day and quarter value
+    if groupby_var == 'day':
+        dhl_tweets[f'{groupby_var}'] = dhl_tweets['date'].apply(lambda x: x.day)
+        cust_tweets[f'{groupby_var}'] = cust_tweets['date'].apply(lambda x: x.day)
+    elif groupby_var == 'quarter':
+        dhl_tweets[f'{groupby_var}'] = dhl_tweets['date'].apply(lambda x: x.quarter)
+        cust_tweets[f'{groupby_var}'] = cust_tweets['date'].apply(lambda x: x.quarter)
+    elif groupby_var == 'month':
+        dhl_tweets[f'{groupby_var}'] = dhl_tweets['date'].apply(lambda x: x.month)
+        cust_tweets[f'{groupby_var}'] = cust_tweets['date'].apply(lambda x: x.month)
+
+    # Get top tweets for all variables
+    grouped_top_replies = dhl_tweets[[f'{groupby_var}', 'tweet', 'replies']].sort_values(by=[f'{groupby_var}'], ascending=True).sort_values(by=['replies'], ascending=False).groupby([f'{groupby_var}']).head(1)
+    grouped_top_likes = dhl_tweets[[f'{groupby_var}', 'tweet', 'likes']].sort_values(by=[f'{groupby_var}'], ascending=True).sort_values(by=['likes'], ascending=False).groupby([f'{groupby_var}']).head(1)
+    grouped_top_retweets = dhl_tweets[[f'{groupby_var}', 'tweet', 'retweets']].sort_values(by=[f'{groupby_var}'], ascending=True).sort_values(by=['retweets'], ascending=False).groupby([f'{groupby_var}']).head(1)
+
+    # Concat tweets for all variables
+    grouped_top_dhl = pd.concat([grouped_top_replies, grouped_top_likes, grouped_top_retweets]).reset_index()
+
+    # Identify variable type (one of replies, likes, retweets)
+    grouped_top_dhl['Variable'] = np.where(grouped_top_dhl['replies'].notnull(), 'Replies',
+             np.where(grouped_top_dhl['likes'].notnull(), 'Likes',
+                     np.where(grouped_top_dhl['retweets'].notnull(), 'Retweets', '')))
+
+    # Group cust_tweets by groupby_var
+    grouped_top_cust = cust_tweets.groupby([f'{groupby_var}', 'polarity']).max()[['tweet']].reset_index()
+    
+    # Replace polarity with Mentions
+    grouped_top_cust['Variable'] = grouped_top_cust['polarity'].apply(lambda x: 'Negative Mentions' if x == 'negative' else 'Positive Mentions')
+
+    # Concat both grouped dhl_tweets and cust_tweets to create summary df
+    grouped_summary_df = pd.concat([grouped_top_cust[[f'{groupby_var}', 'tweet', 'Variable']], grouped_top_dhl[[f'{groupby_var}', 'tweet', 'Variable']]]).rename(columns={'tweet':'Tweet'}).reset_index(drop=True)
+
+    # Rename columns
+    grouped_summary_df = grouped_summary_df.rename(columns={'Variable': 'variable'})
+
+    # Ensure all are in numeric types
+    if groupby_var == 'week':
+        agg_df_period['week'] = pd.to_numeric(agg_df_period['week'])
+        grouped_summary_df['week'] = pd.to_numeric(grouped_summary_df['week'])
+    elif groupby_var == 'year':
+        agg_df_period['year'] = pd.to_numeric(agg_df_period['year'])
+        grouped_summary_df['year'] = pd.to_numeric(grouped_summary_df['year'])
+    elif groupby_var == 'month':
+        agg_df_period['month'] = pd.to_numeric(agg_df_period['month'])
+        grouped_summary_df['month'] = pd.to_numeric(grouped_summary_df['month'])
+
+    # Merge agg_df_period with grouped_summary_df
+    grouped_summary_merged = agg_df_period.merge(grouped_summary_df, left_on=[f'{groupby_var}', 'variable'], right_on=[f'{groupby_var}', 'variable'], how='left')
+
+    # Replace np.nan in Tweets with empty string
+    grouped_summary_merged['Tweet'] = grouped_summary_merged['Tweet'].replace(np.nan, '')
+
+    period_colname = {'year': 'Year',
+                      'quarter': 'Quarter',
+                      'month': 'Month',
+                      'week': 'Week',
+                      'day': 'Day'}
+    # Rename columns
+    grouped_summary_merged = grouped_summary_merged.rename(columns=period_colname)
+    return grouped_summary_merged
+
+def plot_pct_graph(graph_type, groupby_user_input, summary_df):
+    """
+    Plot percentage or percentage change graph according to user input
+
+    Parameters
+    ----------
+    graph_type : str
+        Graph to plot based on user input.One of ['Percentage over time', 'Percentage change over time'].
+    groupby_user_input : str
+        Variable to aggregate the data by, based on user input. One of ['Year', 'Quarter', 'Month', 'Week', 'Day'].
+    summary_df : pandas.core.frame.DataFrame
+        Dataframe containing data aggregated by `groupby_user_input`, within columns [`groupby_user_input`, 'variable', 'value', 'sum', 'percentage', 'pct_change', 'Tweet'].
+
+    Returns
+    -------
+    altair.vegalite.v4.api.VConcatChart
+        Vertically concatenated altair chart with graph on top layer and text table on bottom layer.
+
+    """
+    if graph_type == 'Percentage over time':
+        field_var = 'percentage'
+        field_var_title = 'Percentage'
+    else:
+        field_var = 'pct_change'
+        field_var_title = 'Percentage Change'
+    
+    if groupby_user_input in ['Week', 'Day']:
+        axis_type = 'Q'
+    else:
+        axis_type = 'O'
+
+    if groupby_user_input in ['Year', 'Quarter', 'Month']:
+        # Mouseover selection. Reduces opacity on non-selected items on chart
+        highlight = alt.selection(type='single', on='mouseover', fields=[groupby_user_input], nearest=True)
+        bars = alt.Chart(summary_df).mark_bar().encode(
+                    x=alt.X(f'{groupby_user_input}:{axis_type}', axis=alt.Axis(format='1')),
+                    y=f'{field_var}:Q',
+                    column='variable:N',
+                    color=alt.Color(f'{groupby_user_input}:N', legend=None),
+                    tooltip=[alt.Tooltip(field='variable', title='Variable', type='ordinal'),
+                            alt.Tooltip(field=groupby_user_input, title=groupby_user_input, type='quantitative'),
+                            alt.Tooltip(field='value', title='Current value', type='quantitative'),
+                            alt.Tooltip(field='sum', title='Total', type='quantitative'),
+                            alt.Tooltip(field=field_var, title=field_var_title, type='quantitative')],
+                    opacity=alt.condition(highlight, alt.value(1), alt.value(0.2))
+                ).properties(
+                    title=f'KPI {field_var_title} across {groupby_user_input}',
+                    width=90,
+                    height=100
+                ).add_selection(
+        highlight)
+
+        p = bars
+
+    else:
+        # Drag selection. Reduces opacity on non-selected items on chart
+        highlight = alt.selection(type='interval')
+        
+        line = alt.Chart(summary_df).mark_line().encode(
+            x=alt.X(f'{groupby_user_input}:{axis_type}', axis=alt.Axis(format='1')),
+            y=f'{field_var}:Q',
+            color='variable:N',
+            tooltip=[alt.Tooltip(field='variable', title='Variable', type='ordinal'),
+                     alt.Tooltip(field=field_var, title=field_var_title, type='quantitative')],
+            opacity=alt.condition(highlight, alt.value(1), alt.value(0.2))
+            ).properties(
+                title=f'KPI {field_var_title} across {groupby_user_input}',
+                width=550,
+                height=300
+                ).add_selection(highlight)
+
+        point = alt.Chart(summary_df).mark_circle().encode(
+            x=alt.X(f'{groupby_user_input}:{axis_type}', axis=alt.Axis(format='1')),
+            y=f'{field_var}:Q',
+            color='variable:N',
+            opacity=alt.condition(highlight, alt.value(1), alt.value(0.2))
+        ).transform_filter(highlight)
+
+        p = line+point
+
+    ranked_text = alt.Chart(summary_df).mark_text(align='left', baseline='middle', limit=400).encode(
+        y=alt.Y('row_number:O',axis=None)
+        ).transform_window(
+            row_number='row_number()'
+            ).transform_filter(
+                highlight
+                ).transform_window(
+                    rank='rank(row_number)'
+                    ).transform_filter(alt.datum.rank<20)
+
+    # Columns of text table
+    grouping = ranked_text.encode(text=f'{groupby_user_input}:Q').properties(title=groupby_user_input)
+    var = ranked_text.encode(text='variable:N').properties(title='Variable')
+    annos = ranked_text.encode(text=alt.Text('label_annos:N')).transform_calculate(label_annos=f'format(datum.{field_var},".1f") + " %"').properties(title=field_var_title)
+    tweet = ranked_text.encode(text='Tweet:N').properties(title='Tweet')
+    
+    # Horizontally concat columns to make up text table
+    text = alt.hconcat(grouping, var, annos, tweet)
+
+    # Build chart
+    return alt.vconcat(
+        p, text
+        ).resolve_legend(
+            color="independent"
+            ).configure_view(
+                strokeWidth=0) # Remove border of text table
 
 def main():
 
@@ -1045,26 +1291,41 @@ def main():
         max_date = datetime.date(df_max_date.year, df_max_date.month, df_max_date.day)
         # Get the date of Monday of max_date
         min_date = get_weekstart(max_date)
-
-        # Form to get user input
-        with st.form("trend_form"):
-            # Initialize columns
-            col_t1, col_t2 = st.columns([1,2])
-            # Get user input for date filter
-            user_input_date_from = col_t1.date_input("Filter from date:", min_date)
-            user_input_date_to = col_t2.date_input("Filter to date:", max_date)
-            # Get user input for X axis
-            user_input_x = col_t1.selectbox("Choose X axis:", x)
-            # Get user input for Y axis
-            user_input_y = col_t2.multiselect("Choose Y axis:", y, default=['Select All'],
-                                            help='Multiple selection is allowed')
-            # Get user input for chart type
-            user_input_chart_type = col_t1.selectbox("Choose Chart type:", chart_type,
-                                                   help='Heatmap chart will default to (hours, day of the week) regardless of selected X axis')
-            # Get user input for agg type
-            user_input_agg_type = col_t2.selectbox("Choose aggregation type:", agg_type)
-            # Initialize form submit button
-            trend_form_submitted = st.form_submit_button("Submit")
+        
+        with st.form('trend_form1'):
+            col_t3, col_t4 = st.columns([2,1])
+            trend_form1_selection = col_t3.selectbox('Select Trend:',
+                     ('Percentage over time', 'Percentage change over time'))
+            trend_form1_groupby = col_t4.selectbox('Aggregate by:',
+                                                   ('Year', 'Quarter', 'Month', 'Week', 'Day'))
+            trend_form1_submitted = st.form_submit_button("Submit")
+            
+        if trend_form1_submitted:
+            summary_df = get_summary_df(cust_tweets, dhl_tweets, trend_form1_groupby)
+            plot1 = plot_pct_graph(trend_form1_selection, trend_form1_groupby, summary_df)
+            st.write(plot1)
+            
+            
+        with st.expander('Create Custom Charts'):
+            # Form to get user input
+            with st.form("trend_form2"):
+                # Initialize columns
+                col_t1, col_t2 = st.columns([1,2])
+                # Get user input for date filter
+                user_input_date_from = col_t1.date_input("Filter from date:", min_date)
+                user_input_date_to = col_t2.date_input("Filter to date:", max_date)
+                # Get user input for X axis
+                user_input_x = col_t1.selectbox("Choose X axis:", x)
+                # Get user input for Y axis
+                user_input_y = col_t2.multiselect("Choose Y axis:", y, default=['Select All'],
+                                                help='Multiple selection is allowed')
+                # Get user input for chart type
+                user_input_chart_type = col_t1.selectbox("Choose Chart type:", chart_type,
+                                                       help='Heatmap chart will default to (hours, day of the week) regardless of selected X axis')
+                # Get user input for agg type
+                user_input_agg_type = col_t2.selectbox("Choose aggregation type:", agg_type)
+                # Initialize form submit button
+                trend_form2_submitted = st.form_submit_button("Submit")
         
         # If 'Select All' is selected, get all column names
         if 'Select All' in user_input_y:
@@ -1092,9 +1353,9 @@ def main():
             st.warning('Data is not available for selected dates. Please reselect appropriate dates and click submit.')
 
         # If form is submitted, plot graph
-        if trend_form_submitted:
-            plot = plot_graph(filtered_agg_df.drop(columns=['date']), user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
-            st.write(plot)
+        if trend_form2_submitted:
+            plot2 = plot_custom_graph(filtered_agg_df.drop(columns=['date']), user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
+            st.write(plot2)
 
     if choice == 'Data':
         
