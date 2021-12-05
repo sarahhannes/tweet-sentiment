@@ -1,7 +1,7 @@
 name: CT
-on:
-  schedule:
-    - cron: '0 23 4 * *' # At 23:00 on day-of-month 4
+on: workflow_dispatch
+#   schedule:
+#     - cron: '0 23 4 * *' # At 23:00 on day-of-month 4
 
 defaults:
   run:
