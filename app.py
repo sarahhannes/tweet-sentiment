@@ -681,7 +681,7 @@ def plot_custom_graph(df, x, y, chart_type, agg_type):
         'Hours of the day': 'hours(datetime):T',
         'Day of the week': 'day(datetime):O',
         'Day of the month': 'date(datetime):O',
-        'Week': 'week:O',
+        'Week': 'week:Q',
         'Date': 'monthdate(datetime):O',
         'Month': 'month(datetime):O',
         'Quarter': 'quarter(datetime):O',
@@ -1015,6 +1015,102 @@ def plot_pct_graph(graph_type, groupby_user_input, summary_df):
             color="independent"
             ).configure_view(
                 strokeWidth=0) # Remove border of text table
+
+
+def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type):
+    """
+    Return annotations accompanying custom charts
+
+    Parameters
+    ----------
+    filtered_agg_df : pandas.core.frame.DataFrame
+        DESCRIPTION.
+    user_input_x : str
+        Variable to group the data by, based on user input. One of ['Hours of the day', 'Day of the week', 'Day of the month', 'Week', 'Date', 'Month', 'Quarter', 'Year'].
+    user_input_y : str
+        Variable for KPI, based on user input. One of ['Select All', 'Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets'].
+    user_input_agg_type : str
+        Variable to aggregate the data by, based on user input. One of ['Total number of Tweets', 'Average number of Tweets', 'Min number of Tweets', 'Max number of Tweets'].
+
+    Returns
+    -------
+    list
+        List containing 2 str describing top aggregated `Negative Mentions` and `Positive Mentions`.
+
+    """
+    # Only construct annotations when user select ['Select All'] for user_input_y
+    if user_input_y == ['Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets']:
+        filtered_agg_df['datetime'] = pd.to_datetime(filtered_agg_df['datetime'])
+        
+        # Make a new column to later group the data by, based on user input
+        if user_input_x == 'Hours of the day':
+            filtered_agg_df['x'] = filtered_agg_df['datetime'].apply(lambda x: x.hour)
+            annos_period = 'hour'
+        elif user_input_x == 'Day of the week':
+            filtered_agg_df['x'] = filtered_agg_df['datetime'].apply(lambda x: x.strftime('%A'))
+            annos_period = ''
+        elif user_input_x == 'Day of the month':
+            filtered_agg_df['x'] = filtered_agg_df['datetime'].apply(lambda x: x.day)
+            annos_period = 'day of the month'
+        elif user_input_x == 'Month':
+            filtered_agg_df['x'] = filtered_agg_df['datetime'].apply(lambda x: x.month)
+            annos_period = ''
+        elif user_input_x == 'Quarter':
+            filtered_agg_df['x'] = filtered_agg_df['datetime'].apply(lambda x: x.quarter)
+            annos_period = 'Q'
+        elif user_input_x == 'Week':
+            filtered_agg_df = filtered_agg_df.rename(columns = {'week': 'x'})
+            annos_period = 'week'
+        elif user_input_x == 'Year':
+            filtered_agg_df = filtered_agg_df.rename(columns = {'year': 'x'})
+            annos_period = 'year'
+        elif user_input_x == 'Date':
+            filtered_agg_df = filtered_agg_df.rename(columns = {'date': 'x'})
+            annos_period = ''
+
+        # Group and aggregate values based on user input
+        if user_input_agg_type == 'Total number of Tweets':
+            annos_df = filtered_agg_df.groupby(['x']).sum()
+            annos_agg = 'Highest total'
+        elif user_input_agg_type == 'Average number of Tweets':
+            annos_df = filtered_agg_df.groupby(['x']).mean()
+            annos_agg = 'Highest average'
+        elif user_input_agg_type == 'Min number of Tweets':
+            annos_df = filtered_agg_df.groupby(['x']).min()
+            annos_agg = 'Min'
+        elif user_input_agg_type == 'Max number of Tweets':
+            annos_df = filtered_agg_df.groupby(['x']).max()
+            annos_agg = 'Max'
+
+        # Convert from wide to long format
+        annos_df_melt = pd.melt(annos_df.reset_index(), id_vars=['x'])
+        annos = []
+        # Filter to top 1st value for every variable
+        if user_input_agg_type in ['Total number of Tweets', 'Average number of Tweets']:
+            annos_df_head = annos_df_melt.sort_values(['variable','value'],ascending=False).groupby('variable').head(1).set_index('variable').copy()
+            # Append annotations for `Negative Mentions` and `Positive Mentions` in list
+            for i in ['Negative Mentions', 'Positive Mentions']:
+                if user_input_x == 'Hours of the day':
+                    annos.append(f"{annos_agg} {i} on {annos_period} {str(annos_df_head.at[i, 'x']).zfill(2)}:00")
+                elif user_input_x == 'Day of the month':
+                    n = annos_df_head.at[i, 'x']
+                    # Courtesy to Evandrix. ref: https://stackoverflow.com/a/36977549/14656169
+                    suf = lambda n: "%d%s"%(n,{1:"st",2:"nd",3:"rd"}.get(n if n<20 else n%10,"th"))
+                    annos.append(f"{annos_agg} {i} on {suf(n)} {annos_period}")
+                elif user_input_x == 'Month':
+                    n = datetime.date(1900, annos_df_head.at[i, 'x'], 1)
+                    annos.append(f"{annos_agg} {i} on {annos_period} {n.strftime('%B')}")
+                elif user_input_x == 'Year':
+                    n = re.sub('\..*$', '', annos_df_head.at[i, 'x'])
+                    annos.append(f"{annos_agg} {i} on {annos_period} {n}")
+                elif user_input_x == 'Quarter':
+                    annos.append(f"{annos_agg} {i} on {annos_period}{annos_df_head.at[i, 'x']}")
+                else:
+                    annos.append(f"{annos_agg} {i} on {annos_period} {annos_df_head.at[i, 'x']}")
+        return annos
+    else:
+        return ''
+
 
 def main():
 
@@ -1354,7 +1450,24 @@ def main():
 
         # If form is submitted, plot graph
         if trend_form2_submitted:
+            # Display plot title
+            st.markdown("""
+                        <style>
+                        .big-font {
+                            font-size:18px;
+                        }
+                        </style>
+                        """, unsafe_allow_html=True)
+            plot_title = f"Distribution of {user_input_agg_type} by KPI and {user_input_x} ({user_input_date_from} ~ {user_input_date_to})"
+            st.markdown(f'<p style="font-weight:bold" class="big-font">{plot_title}</p>', unsafe_allow_html=True)
+            # Construct plot
             plot2 = plot_custom_graph(filtered_agg_df.drop(columns=['date']), user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
+            # Display plot annotations (if any)
+            annos = get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type)
+            if annos != '':
+                for a in annos:
+                    st.write(a)
+            # Display plot
             st.write(plot2)
 
     if choice == 'Data':
