@@ -947,7 +947,8 @@ def plot_pct_graph(graph_type, groupby_user_input, summary_df):
                     x=alt.X(f'{groupby_user_input}:{axis_type}', axis=alt.Axis(format='1')),
                     y=f'{field_var}:Q',
                     column='variable:N',
-                    color=alt.Color(f'{groupby_user_input}:N', legend=None),
+                    #color=alt.Color(f'{groupby_user_input}:N', legend=None),
+                    color=alt.Color('variable:N', legend=None),
                     tooltip=[alt.Tooltip(field='variable', title='Variable', type='ordinal'),
                             alt.Tooltip(field=groupby_user_input, title=groupby_user_input, type='quantitative'),
                             alt.Tooltip(field='value', title='Current value', type='quantitative'),
@@ -1017,7 +1018,7 @@ def plot_pct_graph(graph_type, groupby_user_input, summary_df):
                 strokeWidth=0) # Remove border of text table
 
 
-def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type):
+def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, local_tz, server_tz):
     """
     Return annotations accompanying custom charts
 
@@ -1031,6 +1032,10 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type):
         Variable for KPI, based on user input. One of ['Select All', 'Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets'].
     user_input_agg_type : str
         Variable to aggregate the data by, based on user input. One of ['Total number of Tweets', 'Average number of Tweets', 'Min number of Tweets', 'Max number of Tweets'].
+    local_tz : str
+        Region for user timezone eg "Asia/Kuala_Lumpur".
+    server_tz : pytz.tzfile.Etc/UTC
+        timezone information for server location.
 
     Returns
     -------
@@ -1040,7 +1045,7 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type):
     """
     # Only construct annotations when user select ['Select All'] for user_input_y
     if user_input_y == ['Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets']:
-        filtered_agg_df['datetime'] = pd.to_datetime(filtered_agg_df['datetime'])
+        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_convert(server_tz))
         
         # Make a new column to later group the data by, based on user input
         if user_input_x == 'Hours of the day':
@@ -1463,7 +1468,7 @@ def main():
             # Construct plot
             plot2 = plot_custom_graph(filtered_agg_df.drop(columns=['date']), user_input_x, user_input_y, user_input_chart_type, user_input_agg_type)
             # Display plot annotations (if any)
-            annos = get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type)
+            annos = get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, local_tz, server_tz)
             if annos != '':
                 for a in annos:
                     st.write(a)
