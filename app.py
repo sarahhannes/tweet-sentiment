@@ -1045,7 +1045,7 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
     """
     # Only construct annotations when user select ['Select All'] for user_input_y
     if user_input_y == ['Total Customer Mentions', 'Total DHL Tweets', 'Likes', 'Negative Mentions', 'Positive Mentions', 'Replies', 'Retweets']:
-        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_convert(server_tz))
+        filtered_agg_df['datetime'] = filtered_agg_df['datetime'].apply(lambda x: pd.to_datetime(x).tz_convert(local_tz))
         
         # Make a new column to later group the data by, based on user input
         if user_input_x == 'Hours of the day':
