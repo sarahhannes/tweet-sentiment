@@ -9,7 +9,7 @@ A Python based project for performing sentiment analysis on Twitter data.
 
 Architecture Overview
 ------------
-![flowcharts-pipelines (5)](https://user-images.githubusercontent.com/78901374/144871804-a9591deb-28fa-4bca-8ec5-afb3fde14efb.png)
+![flowcharts-pipelines (6)](https://user-images.githubusercontent.com/78901374/145487611-43c9be19-ab46-475a-9f77-770f19ae08e5.png)
 
 Dashboard
 ------------
