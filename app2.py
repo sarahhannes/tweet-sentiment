@@ -1128,25 +1128,24 @@ def plot_global_trend2(all_df, kpi_color_pal):
     all_df['value'] = all_df['value'].apply(lambda x: float(x))
     all_df['week'] = all_df['week'].apply(lambda x: float(x))
 
-    # brush = alt.selection(type='single', fields=['week'])
+    brush = alt.selection(type='single', encodings=['color'], bind=legend)
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
     x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
     y=alt.Y('value:Q', title = 'Total Tweets'),
-    color=alt.Color('variable:N', title='KPI', scale=alt.Scale(scheme=kpi_color_pal)),
+    #color=alt.Color('variable:N', title='KPI', scale=alt.Scale(scheme=kpi_color_pal)),
     #opacity=alt.condition(brush, alt.value(1), alt.value(0.5)),
-    # color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
+    color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
     tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
         alt.Tooltip(field='variable', title='KPI', type='ordinal'),
         alt.Tooltip(field='value', title='Total Tweets', type='quantitative')]
     ).properties(
         title={
     "text": ["Global Weekly Trend"], 
-    "subtitle": ["Click on bar to view the corresponding trending tweets keywords for the selected week.",
-            ""],
+    "subtitle": [""],
     "color": "black",
     "subtitleColor": "gray"
-    },width=600, height=250
+    },width=600, height=250).add_selection(brush)
         )#.add_selection(brush)
 
     # dropdown filter
