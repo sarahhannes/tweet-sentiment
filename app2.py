@@ -1158,7 +1158,7 @@ def plot_global_trend(df_list, kpi_color_pal):
 
     # Main chart
     p = alt.Chart(recent_week_agg_df_melted).mark_bar().encode(
-        x=alt.X('week:O', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
+        x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
         color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
         tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
@@ -1191,7 +1191,7 @@ def plot_global_trend(df_list, kpi_color_pal):
     neg_bar = alt.Chart(neg_df).transform_window(
         rank='rank()', sort=[alt.SortField('count', order='descending')]
         ).transform_filter(
-            (alt.datum.percentage >= 15) | (alt.datum.rank <= 10) # Filter
+            (alt.datum.percentage >= 15) #| (alt.datum.rank <= 10) # Filter
             ).mark_bar().encode(
                 x=alt.X('percentage:Q'),
                 y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
