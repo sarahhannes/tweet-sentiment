@@ -1165,7 +1165,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Negative Keywords', width=300, height=100
-                    ).transform_filter(week_selector)
+                    ).transform_filter(alt.datum.week == week_selector.value)
 
     # Return concatenated charts
     return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
