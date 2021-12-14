@@ -2148,6 +2148,10 @@ def main():
         pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
         neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
         
+        st.write('recent_week_agg_df_melted', recent_week_agg_df_melted)
+        st.write('pos_df', pos_df)
+        st.write('neg_df', neg_df)
+        
         global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
         st.write(global_plot1)
         st.write('---')
