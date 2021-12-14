@@ -1127,11 +1127,11 @@ def plot_global_trend2(all_df, kpi_color_pal):
 
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
-        x=alt.X('week:T', title='Week', axis=alt.Axis(tickSize=0)),#, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
+        x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0)),#, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
         color=alt.Color('variable:N', scale=alt.Scale(scheme=kpi_color_pal)),
         #color=alt.condition(week_selector, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
-        tooltip=[alt.Tooltip(field='week', title='Week', type='T'),
+        tooltip=[alt.Tooltip(field='week', title='Week', type='O'),
             alt.Tooltip(field='variable', title='KPI', type='ordinal'),
             alt.Tooltip(field='value', title='Total Tweets', type='quantitative')]
         ).properties(
