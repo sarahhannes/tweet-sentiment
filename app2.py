@@ -1211,8 +1211,6 @@ def plot_global_trend(df_list, kpi_color_pal):
     pos_df = df_list[1]
     neg_df = df_list[2]
 
-    # test remove np.nan here instead
-    neg_df = neg_df.replace(np.nan, 0)
     
 
     st.write('inside plot_global_trend')
