@@ -1212,13 +1212,15 @@ def plot_global_trend(df_list, kpi_color_pal):
     # Initialize selection
     # brush = alt.selection(type='single', fields=['week'])
     # brush = alt.selection_single(encodings=['x'])
-    brush = alt.selection(type='interval')
+    brush = alt.selection(type='single', fields=['week'])
 
     # Main chart
     p = alt.Chart(recent_week_agg_df_melted).mark_bar().encode(
         x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
-        color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
+        color=alt.Color('variable:N', title='KPI', scale=alt.Scale(scheme=kpi_color_pal)),
+        opacity=alt.condition(brush, alt.value(1), alt.value(0.5)),
+        # color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
         tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
             alt.Tooltip(field='variable', title='KPI', type='ordinal'),
             alt.Tooltip(field='value', title='Total Tweets', type='quantitative')]
@@ -1241,7 +1243,7 @@ def plot_global_trend(df_list, kpi_color_pal):
                 x=alt.X('percentage:Q'),
                 y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
                 color=alt.value('lightgray'),
-                opacity=alt.value(0.5)
+                # opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Positive Keywords', width=300, height=100
                     ).transform_filter(brush)
@@ -1254,7 +1256,7 @@ def plot_global_trend(df_list, kpi_color_pal):
                 x=alt.X('percentage:Q'),
                 y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
                 color=alt.value('lightgray'),
-                opacity=alt.value(0.5)
+                # opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Negative Keywords', width=300, height=100
                     ).transform_filter(brush)
