@@ -1125,8 +1125,8 @@ def plot_global_trend2(all_df, kpi_color_pal):
 
     all_df = all_df.replace(np.nan,0)
 
-    all_df['value'] = all_df['value'].apply(lambda x: int(x))
-    all_df['week'] = all_df['week'].apply(lambda x: int(x))
+    all_df['value'] = all_df['value'].apply(lambda x: float(x))
+    all_df['week'] = all_df['week'].apply(lambda x: float(x))
 
     # brush = alt.selection(type='single', fields=['week'])
     # Main chart
