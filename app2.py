@@ -1129,7 +1129,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
     p = alt.Chart(all_df).mark_bar().encode(
         x=alt.X('week:T', title='Week', axis=alt.Axis(tickSize=0)),#, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
-        color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
+        color=alt.condition(week_selector, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
         tooltip=[alt.Tooltip(field='week', title='Week', type='T'),
             alt.Tooltip(field='variable', title='KPI', type='ordinal'),
             alt.Tooltip(field='value', title='Total Tweets', type='quantitative')]
@@ -1152,7 +1152,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Positive Keywords', width=300, height=100
-                    ).transform_filter(week_selector).transform_filter((alt.datum.percentage >= 15) | (alt.datum.rank <= 10)).add_selection(brush)
+                    ).transform_filter(week_selector).transform_filter((alt.datum.percentage >= 15) | (alt.datum.rank <= 10)).add_selection(week_selector)
 
     neg_bar = alt.Chart(all_df).transform_window(
         rank='rank()', sort=[alt.SortField('count', order='descending')]
