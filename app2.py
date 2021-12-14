@@ -2232,9 +2232,12 @@ def main():
         # exactly copy pasted plot_global_trend def but selects subset of week instead of the whole bar
         # global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
         
-        # test if it is due to the dfs 
-        global_plot1 = plot_global_trend([all_df, all_df, all_df], kpi_color_pal)
+        # Using the same dfs gives the subset of the week col
+        # next, testing if it is due to 2 nans col / or maybe it is due to all the np.nans cols
+        global_plot1 = plot_global_trend([all_df, all_df.drop(columns=['variable', 'value']), all_df.replace(np.nan, 0)], kpi_color_pal)
 
+        # next try using pd remove nan rows using thresh?
+        
         # st.write(global_plot1)
         st.altair_chart(global_plot1, use_container_width=True)
         st.write('---')
