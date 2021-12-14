@@ -1154,7 +1154,7 @@ def plot_global_trend(df_list, kpi_color_pal):
     st.write('neg_df', neg_df)
 
     # Initialize selection
-    brush = alt.selection_multi(fields=['week'])
+    brush = alt.selection_single(fields=['week'])
 
     # Main chart
     p = alt.Chart(recent_week_agg_df_melted).mark_bar().encode(
@@ -1191,7 +1191,7 @@ def plot_global_trend(df_list, kpi_color_pal):
     neg_bar = alt.Chart(neg_df).transform_window(
         rank='rank()', sort=[alt.SortField('count', order='descending')]
         ).transform_filter(
-            (alt.datum.percentage >= 15) #| (alt.datum.rank <= 10) # Filter
+            (alt.datum.percentage >= 15) | (alt.datum.rank <= 10) # Filter
             ).mark_bar().encode(
                 x=alt.X('percentage:Q'),
                 y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
@@ -2159,7 +2159,8 @@ def main():
         st.write('pos_df', pos_df)
         st.write('neg_df', neg_df)
         
-        global_plot1 = plot_global_trend([all_df, pos_df, neg_df], kpi_color_pal)
+        # global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
+        global_plot1 = plot_global_trend([all_df, all_df, all_df], kpi_color_pal)
         st.write(global_plot1)
         st.write('---')
         
