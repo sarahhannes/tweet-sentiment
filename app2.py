@@ -2293,6 +2293,9 @@ def main():
         st.write('using plot_global_trend')
         st.write(plot_global_trend(recent_week_agg_df_melted.astype(str), pos_df.astype(str), neg_df.astype(str), kpi_color_pal))
         
+
+        st.write('using plot_global_trend with all all_df')
+        st.write(plot_global_trend(all_df.astype(str), all_df[all_df['polarity']=='positive'].astype(str), all_df[all_df['polarity']=='negative'].astype(str), kpi_color_pal))
         # Prepare df for plot2 and plot3
         summary_df_list = []
         for var in ['Month', 'Week']:
