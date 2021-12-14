@@ -1189,7 +1189,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
 )
 
 
-def plot_global_trend(df_list, kpi_color_pal):
+def plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal):
     """
     Returns altair charts
 
@@ -1211,9 +1211,9 @@ def plot_global_trend(df_list, kpi_color_pal):
     """
     
     # Unpacking args
-    recent_week_agg_df_melted = df_list[0]
-    pos_df = df_list[1]
-    neg_df = df_list[2]
+    # recent_week_agg_df_melted = df_list[0]
+    # pos_df = df_list[1]
+    # neg_df = df_list[2]
 
     
 
@@ -2224,9 +2224,9 @@ def main():
         
         polarity_df = pd.concat([top5week_neg, top5week_pos])
         all_df = pd.concat([polarity_df, recent_week_agg_df_melted]).reset_index(drop=True)
-        # all_df['week'] = all_df['week'].apply(lambda x: int(x))
-        # pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
-        # neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
+        all_df['week'] = all_df['week'].apply(lambda x: int(x))
+        pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
+        neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
         
         # st.write('recent_week_agg_df_melted', recent_week_agg_df_melted)
         # st.write('pos_df', pos_df)
@@ -2234,9 +2234,10 @@ def main():
         
         # this selects week bar
         # global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
+        global_plot1 = plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal)
         # exactly copy pasted plot_global_trend def but selects subset of week instead of the whole bar
         # check filter using transform_filter in polarity graphs
-        global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
+        # global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
         
         # Using the same dfs gives the subset of the week col
         # next, testing if it is due to 2 nans col / or maybe it is due to all the np.nans cols
