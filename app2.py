@@ -2225,8 +2225,8 @@ def main():
         polarity_df = pd.concat([top5week_neg, top5week_pos])
         all_df = pd.concat([polarity_df, recent_week_agg_df_melted]).reset_index(drop=True)
         all_df['week'] = all_df['week'].apply(lambda x: int(x))
-        pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
-        neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
+        pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True).drop(columns=['variable', 'value'])
+        neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True).drop(columns=['variable', 'value'])
         
         # st.write('recent_week_agg_df_melted', recent_week_agg_df_melted)
         # st.write('pos_df', pos_df)
