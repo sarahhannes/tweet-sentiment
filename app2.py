@@ -1123,10 +1123,14 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
 
 def plot_global_trend2(all_df, kpi_color_pal):
     
+    all_df['week'] = all_df['week'].apply(lambda x: int(x))
+    pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True).drop(columns=['variable', 'value'])
+    neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True).drop(columns=['variable', 'value'])
     # Initialize selection
     # brush = alt.selection(type='single', fields=['week'])
     # brush = alt.selection_single(encodings=['x'])
     brush = alt.selection(type='single', fields=['week'])
+    
 
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
@@ -1149,7 +1153,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
             ).add_selection(brush)
 
     # Bottom bar charts (tweets keywords)
-    pos_bar = alt.Chart(all_df).transform_window(
+    pos_bar = alt.Chart(pos_df).transform_window(
         rank='rank()',sort=[alt.SortField('count', order='descending')]
         ).transform_filter(
             (alt.datum.percentage >= 15) | (alt.datum.rank <= 10)
@@ -1162,7 +1166,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                     title='Trending Positive Keywords', width=300, height=100
                     ).transform_filter(brush).transform_filter(alt.datum.polarity=='positive')
     
-    neg_bar = alt.Chart(all_df).transform_window(
+    neg_bar = alt.Chart(neg_df).transform_window(
         rank='rank()', sort=[alt.SortField('count', order='descending')]
         ).transform_filter(
             (alt.datum.percentage >= 15) | (alt.datum.rank <= 10) # Filter
@@ -2220,9 +2224,9 @@ def main():
         
         polarity_df = pd.concat([top5week_neg, top5week_pos])
         all_df = pd.concat([polarity_df, recent_week_agg_df_melted]).reset_index(drop=True)
-        all_df['week'] = all_df['week'].apply(lambda x: int(x))
-        pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
-        neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
+        # all_df['week'] = all_df['week'].apply(lambda x: int(x))
+        # pos_df = all_df[all_df['polarity']=='positive'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
+        # neg_df = all_df[all_df['polarity']=='negative'].sort_values(by=['count'], ascending=False).reset_index(drop=True)
         
         st.write('recent_week_agg_df_melted', recent_week_agg_df_melted)
         st.write('pos_df', pos_df)
