@@ -1229,7 +1229,7 @@ def plot_global_trend3(all_df, kpi_color_pal):
     brush = alt.selection_single(fields=['week'])
 
     # Main chart
-    p = alt.Chart(recent_week_agg_df_melted).mark_bar().encode(
+    p = alt.Chart(all_df).mark_bar().encode(
         x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
         color=alt.Color('variable:N', title='KPI', scale=alt.Scale(scheme=kpi_color_pal)),
