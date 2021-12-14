@@ -2238,10 +2238,10 @@ def main():
         # global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
         
         # doesnt work - polarity charts not showing anything
-        # global_plot1 = plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal)
+        global_plot1 = plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal)
         # exactly copy pasted plot_global_trend def but selects subset of week instead of the whole bar
         # check filter using transform_filter in polarity graphs
-        global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
+        # global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
         
         # Using the same dfs gives the subset of the week col
         # next, testing if it is due to 2 nans col / or maybe it is due to all the np.nans cols
