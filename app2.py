@@ -1147,6 +1147,12 @@ def plot_global_trend(df_list, kpi_color_pal):
     pos_df = df_list[1]
     neg_df = df_list[2]
     
+
+    st.write('inside plot_global_trend')
+    st.write('recent_week_agg_df_melted', recent_week_agg_df_melted)
+    st.write('pos_df', pos_df)
+    st.write('neg_df', neg_df)
+
     # Initialize selection
     brush = alt.selection_multi(fields=['week'])
 
