@@ -1210,6 +1210,9 @@ def plot_global_trend(df_list, kpi_color_pal):
     recent_week_agg_df_melted = df_list[0]
     pos_df = df_list[1]
     neg_df = df_list[2]
+
+    # test remove np.nan here instead
+    neg_df = neg_df.replace(np.nan, 0)
     
 
     st.write('inside plot_global_trend')
@@ -2234,7 +2237,7 @@ def main():
         
         # Using the same dfs gives the subset of the week col
         # next, testing if it is due to 2 nans col / or maybe it is due to all the np.nans cols
-        global_plot1 = plot_global_trend([all_df, all_df.drop(columns=['variable', 'value']), all_df.replace(np.nan, 0)], kpi_color_pal)
+        global_plot1 = plot_global_trend([all_df, all_df.drop(columns=['variable', 'value']), all_df], kpi_color_pal)
 
         # next try using pd remove nan rows using thresh?
         
