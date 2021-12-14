@@ -1210,8 +1210,8 @@ def plot_global_trend(df_list, kpi_color_pal):
     st.write('neg_df', neg_df)
 
     # Initialize selection
-    # brush = alt.selection_single(fields=['week'])
-    brush = alt.selection_single(encodings=['x'])
+    brush = alt.selection_single(fields=['week'])
+    # brush = alt.selection_single(encodings=['x'])
 
     # Main chart
     p = alt.Chart(recent_week_agg_df_melted).mark_bar().encode(
