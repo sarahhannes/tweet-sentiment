@@ -1,6 +1,5 @@
 Twitter Sentiment Analysis [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/sarahhannes/tweet-sentiment/dev/app2.py)
 ==============================
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/sarahhannes/tweet-sentiment/dev/app.py)
 [![CD](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/cd.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/cd.yml)
 [![CT](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct.yml)
 [![CT Workflow Rollback](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct_rollback.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct_rollback.yml)
