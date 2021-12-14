@@ -1122,59 +1122,67 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
         return ''
 
 def plot_global_trend2(all_df, kpi_color_pal):
-    all_df['week'] = all_df['week'].apply(lambda x: int(x))
-    week_selector = alt.selection_single(fields=['week'])
+    
+    # Initialize selection
+    # brush = alt.selection(type='single', fields=['week'])
+    # brush = alt.selection_single(encodings=['x'])
+    brush = alt.selection(type='single', fields=['week'])
 
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
-        x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0)),#, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
+        x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
-        color=alt.Color('variable:N', scale=alt.Scale(scheme=kpi_color_pal)),
-        #color=alt.condition(week_selector, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
+        color=alt.Color('variable:N', title='KPI', scale=alt.Scale(scheme=kpi_color_pal)),
+        opacity=alt.condition(brush, alt.value(1), alt.value(0.5)),
+        # color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
         tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
             alt.Tooltip(field='variable', title='KPI', type='ordinal'),
             alt.Tooltip(field='value', title='Total Tweets', type='quantitative')]
         ).properties(
-            title={
-    "text": ["Global Weekly Trend"], 
-    "subtitle": ["Click on bar to view the corresponding trending tweets keywords for the selected week.",
-                ""],
-    "color": "black",
-    "subtitleColor": "gray"
+             title={
+      "text": ["Global Weekly Trend"], 
+      "subtitle": ["Click on bar to view the corresponding trending tweets keywords for the selected week.",
+                   ""],
+      "color": "black",
+      "subtitleColor": "gray"
     },width=600, height=250
-            ).add_selection(week_selector)
+            ).add_selection(brush)
 
-    # .transform_window(rank='rank()',sort=[alt.SortField('count', order='descending')])
     # Bottom bar charts (tweets keywords)
-    pos_bar = alt.Chart(all_df).mark_bar().encode(
-                x=alt.X('percentage:Q'),
-                y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
-                color=alt.value('lightgray'),
-                opacity=alt.value(0.5)
-                ).properties(
-                    title='Trending Positive Keywords', width=300, height=100
-                    ).transform_filter(week_selector).transform_filter((alt.datum.percentage >= 15) | (alt.datum.rank <= 10)).add_selection(week_selector)
-
-    neg_bar = alt.Chart(all_df).transform_window(
-        rank='rank()', sort=[alt.SortField('count', order='descending')]
-        ).transform_filter((alt.datum.percentage >= 15) | (alt.datum.rank <= 10) # Filter
+    pos_bar = alt.Chart(all_df).transform_window(
+        rank='rank()',sort=[alt.SortField('count', order='descending')]
+        ).transform_filter(
+            (alt.datum.percentage >= 15) | (alt.datum.rank <= 10)
             ).mark_bar().encode(
                 x=alt.X('percentage:Q'),
                 y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
                 color=alt.value('lightgray'),
-                opacity=alt.value(0.5)
+                # opacity=alt.value(0.5)
+                ).properties(
+                    title='Trending Positive Keywords', width=300, height=100
+                    ).transform_filter(brush)
+    
+    neg_bar = alt.Chart(all_df).transform_window(
+        rank='rank()', sort=[alt.SortField('count', order='descending')]
+        ).transform_filter(
+            (alt.datum.percentage >= 15) | (alt.datum.rank <= 10) # Filter
+            ).mark_bar().encode(
+                x=alt.X('percentage:Q'),
+                y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
+                color=alt.value('lightgray'),
+                # opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Negative Keywords', width=300, height=100
-                    ).transform_filter(alt.datum.week == week_selector.value)
-
+                    ).transform_filter(brush)
+    
     # Return concatenated charts
     return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
-                    ).resolve_legend(color="independent"
+                       ).resolve_legend(color="independent"
                                         ).configure_view(strokeWidth=0).configure_title(
     fontSize=20,
     anchor='start',
     color='gray'
-    )
+)
 
 
 def plot_global_trend(df_list, kpi_color_pal):
@@ -2219,8 +2227,8 @@ def main():
         st.write('pos_df', pos_df)
         st.write('neg_df', neg_df)
         
-        global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
-        # global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
+        # global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
+        global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
         # st.write(global_plot1)
         st.altair_chart(global_plot1, use_container_width=True)
         st.write('---')
