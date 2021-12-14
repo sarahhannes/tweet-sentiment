@@ -1136,7 +1136,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
     color=alt.Color('variable:N', title='KPI', scale=alt.Scale(scheme=kpi_color_pal)),
     #opacity=alt.condition(brush, alt.value(1), alt.value(0.5)),
     #color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
-    opacity = alt.condition(brush, alt.value(1), alt.value(0.2))
+    opacity = alt.condition(brush, alt.value(1), alt.value(0.2)),
     tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
         alt.Tooltip(field='variable', title='KPI', type='ordinal'),
         alt.Tooltip(field='value', title='Total Tweets', type='quantitative')]
