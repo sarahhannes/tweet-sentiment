@@ -1213,6 +1213,76 @@ def plot_global_trend2(all_df, kpi_color_pal):
     )
 
 
+def plot_global_trend3(all_df, kpi_color_pal):
+    # working plot1 from plot_global_trend + working plot2 from plot_global_trend2
+      # neg_df = df_list[2]
+
+    all_df = all_df.replace(np.nan,0)
+
+    all_df['value'] = all_df['value'].apply(lambda x: float(x))
+    all_df['week'] = all_df['week'].apply(lambda x: float(x))
+
+
+    # Initialize selection
+    # brush = alt.selection(type='single', fields=['week'])
+    # brush = alt.selection_single(encodings=['x'])
+    brush = alt.selection_single(fields=['week'])
+
+    # Main chart
+    p = alt.Chart(recent_week_agg_df_melted).mark_bar().encode(
+        x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
+        y=alt.Y('value:Q', title = 'Total Tweets'),
+        color=alt.Color('variable:N', title='KPI', scale=alt.Scale(scheme=kpi_color_pal)),
+        opacity=alt.condition(brush, alt.value(1), alt.value(0.5)),
+        # color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
+        tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
+            alt.Tooltip(field='variable', title='KPI', type='ordinal'),
+            alt.Tooltip(field='value', title='Total Tweets', type='quantitative')]
+        ).properties(
+             title={
+      "text": ["Global Weekly Trend"], 
+      "subtitle": ["Click on bar to view the corresponding trending tweets keywords for the selected week.",
+                   ""],
+      "color": "black",
+      "subtitleColor": "gray"
+    },width=600, height=250
+            ).add_selection(brush)
+
+    # Bottom bar charts (tweets keywords)
+    pos_bar = alt.Chart(all_df[all_df['polarity']=='positive']).transform_window(
+    rank='rank()',sort=[alt.SortField('count', order='descending')]
+    ).transform_filter(
+        (alt.datum.percentage >= 15) | (alt.datum.rank <= 10)
+        ).mark_bar().encode(
+            x=alt.X('percentage:Q'),
+            y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
+            color=alt.value('lightgray'),
+            # opacity=alt.value(0.5)
+            ).properties(
+                title='Trending Positive Keywords', width=300, height=100
+                ).add_selection(brush)
+
+    neg_bar = alt.Chart(all_df[all_df['polarity']=='negative']).transform_window(rank='rank()', sort=[alt.SortField('count', order='descending')]
+    ).transform_filter(
+        (alt.datum.percentage >= 15) | (alt.datum.rank <= 10) # Filter
+        ).mark_bar().encode(
+            x=alt.X('percentage:Q'),
+            y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
+            color=alt.value('lightgray'),
+            # opacity=alt.value(0.5)
+            ).properties(
+                title='Trending Negative Keywords', width=300, height=100
+                ).add_selection(brush)
+
+    # Return concatenated charts
+    return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
+                ).resolve_legend(color="independent"
+                                    ).configure_view(strokeWidth=0).configure_title(
+    fontSize=20,
+    anchor='start',
+    color='gray'
+    )
+
 def plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal):
     """
     Returns altair charts
@@ -2296,6 +2366,11 @@ def main():
 
         st.write('using plot_global_trend with all all_df')
         st.write(plot_global_trend(all_df.astype(str), all_df[all_df['polarity']=='positive'].astype(str), all_df[all_df['polarity']=='negative'].astype(str), kpi_color_pal))
+
+        st.write('using working plot1 from plot_global_trend + working plot2 from plot_global_trend2')
+        st.write(plot_global_trend3(all_df.astype(str), kpi_color_pal))
+
+
         # Prepare df for plot2 and plot3
         summary_df_list = []
         for var in ['Month', 'Week']:
