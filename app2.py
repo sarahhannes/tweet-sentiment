@@ -2227,8 +2227,8 @@ def main():
         st.write('pos_df', pos_df)
         st.write('neg_df', neg_df)
         
-        # global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
-        global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
+        global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
+        # global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
         # st.write(global_plot1)
         st.altair_chart(global_plot1, use_container_width=True)
         st.write('---')
