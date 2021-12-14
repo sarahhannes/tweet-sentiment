@@ -1259,7 +1259,7 @@ def plot_global_trend3(all_df, kpi_color_pal):
             color=alt.value('lightgray'),
             # opacity=alt.value(0.5)
             ).properties(
-                title='Trending Positive Keywords', width=300, height=100
+                title='Trending Positive Keywords', width=300, height=150
                 ).transform_filter(brush)
 
     neg_bar = alt.Chart(all_df[all_df['polarity']=='negative']).transform_window(rank='rank()', sort=[alt.SortField('count', order='descending')]
@@ -1271,7 +1271,7 @@ def plot_global_trend3(all_df, kpi_color_pal):
             color=alt.value('lightgray'),
             # opacity=alt.value(0.5)
             ).properties(
-                title='Trending Negative Keywords', width=300, height=100
+                title='Trending Negative Keywords', width=300, height=150
                 ).transform_filter(brush)
 
     # Return concatenated charts
