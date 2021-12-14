@@ -1126,7 +1126,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
 
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
-        x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
+        x=alt.X('week:O', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
         color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
         tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
@@ -1163,7 +1163,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Negative Keywords', width=300, height=100
-                    ).transform_filter(brush)
+                    ).transform_filter(alt.datum.week == brush.value)
 
     # Return concatenated charts
     return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
