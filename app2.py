@@ -1540,7 +1540,7 @@ def plot_regional_yw(wk_recent_regional_agg_df, regional_acc_color_pal):
             color = alt.Color('regional_acc:N', title='Regional account', scale=alt.Scale(scheme=regional_acc_color_pal)),
             row = alt.Row('Year:O', sort='descending', header=alt.Header(labelOrient='top')),
             opacity=alt.condition(selection, alt.value(1), alt.value(0.01)),
-            tooltip=[alt.Tooltip(field='week', title='week', type='ordinal'),
+            tooltip=[alt.Tooltip(field='week', title='week', type='quantitative'),
                      alt.Tooltip(field='label_percentage', title='Percentage', type='nominal'),
                      alt.Tooltip(field='value', title='value', type='quantitative'),
                      alt.Tooltip(field='sum', title='sum', type='quantitative'),
