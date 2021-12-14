@@ -1255,7 +1255,7 @@ def plot_global_trend3(all_df, kpi_color_pal):
         (alt.datum.percentage >= 15) | (alt.datum.rank <= 10)
         ).mark_bar().encode(
             x=alt.X('percentage:Q'),
-            y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
+            y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="percentage", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
             color=alt.value('lightgray'),
             # opacity=alt.value(0.5)
             ).properties(
@@ -1267,7 +1267,7 @@ def plot_global_trend3(all_df, kpi_color_pal):
         (alt.datum.percentage >= 15) | (alt.datum.rank <= 10) # Filter
         ).mark_bar().encode(
             x=alt.X('percentage:Q'),
-            y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="count", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
+            y=alt.Y('keywords:O', title='', sort=alt.EncodingSortField(field="percentage", op="sum", order='descending'), axis=alt.Axis(tickSize=0)),
             color=alt.value('lightgray'),
             # opacity=alt.value(0.5)
             ).properties(
