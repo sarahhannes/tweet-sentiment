@@ -1146,7 +1146,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
     "color": "black",
     "subtitleColor": "gray"
     },width=600, height=250).add_selection(brush)
-        )#.add_selection(brush)
+        
 
     # dropdown filter
     week_var = all_df["week"].unique()
