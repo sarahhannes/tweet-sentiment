@@ -1272,7 +1272,7 @@ def plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal):
                 # opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Negative Keywords', width=300, height=100
-                    ).transform_filter(brush)
+                    ).transform_filter(alt.datum.week == brush)
     
     # Return concatenated charts
     return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
