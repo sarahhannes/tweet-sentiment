@@ -1122,6 +1122,7 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
         return ''
 
 def plot_global_trend2(all_df, kpi_color_pal):
+    brush = alt.selection(type='single', fields=['week'])
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
     x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
