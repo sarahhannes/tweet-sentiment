@@ -1171,7 +1171,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 ).transform_filter(brush).transform_filter(alt.datum.polarity=='negative')
 
     # Return concatenated charts
-    alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
+    return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
                 ).resolve_legend(color="independent"
                                     ).configure_view(strokeWidth=0).configure_title(
     fontSize=20,
