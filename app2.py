@@ -1122,12 +1122,12 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
         return ''
 
 def plot_global_trend2(all_df, kpi_color_pal):
-    # brush = alt.selection_single(fields=['week'])
-    brush = alt.selection(type='single', on='click', fields=['week'], nearest=True)
+ 
+    brush = alt.selection_single(fields=['week'])
 
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
-        x=alt.X('week:O', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
+        x=alt.X('week:O', title='Week', axis=alt.Axis(tickSize=0, grid=False, labelExpr="datum.value % 1 ? null : datum.label")),
         y=alt.Y('value:Q', title = 'Total Tweets'),
         color=alt.condition(brush, 'variable:N', alt.value('lightblue'), scale=alt.Scale(scheme=kpi_color_pal), title='KPI'),
         tooltip=[alt.Tooltip(field='week', title='Week', type='ordinal'),
@@ -1141,7 +1141,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
     "color": "black",
     "subtitleColor": "gray"
     },width=600, height=250
-            ).add_selection(brush).interactive()
+            ).add_selection(brush)
 
     # .transform_window(rank='rank()',sort=[alt.SortField('count', order='descending')])
     # Bottom bar charts (tweets keywords)
@@ -1152,7 +1152,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Positive Keywords', width=300, height=100
-                    ).transform_filter(brush).transform_filter((alt.datum.percentage >= 15) | (alt.datum.rank <= 10))
+                    ).transform_filter(brush).transform_filter((alt.datum.percentage >= 15) | (alt.datum.rank <= 10)).add_selection(brush)
 
     neg_bar = alt.Chart(all_df).transform_window(
         rank='rank()', sort=[alt.SortField('count', order='descending')]
@@ -1164,7 +1164,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Negative Keywords', width=300, height=100
-                    ).transform_filter(alt.datum.week == brush.value)
+                    ).transform_filter(brush)
 
     # Return concatenated charts
     return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
@@ -1174,6 +1174,8 @@ def plot_global_trend2(all_df, kpi_color_pal):
     anchor='start',
     color='gray'
     )
+
+
 def plot_global_trend(df_list, kpi_color_pal):
     """
     Returns altair charts
