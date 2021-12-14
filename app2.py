@@ -1124,6 +1124,10 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
 def plot_global_trend2(all_df, kpi_color_pal):
 
     all_df = all_df.replace(np.nan,0)
+
+    all_df['value'] = all_df['value'].apply(lambda x: int(x))
+    all_df['week'] = all_df['week'].apply(lambda x: int(x))
+
     # brush = alt.selection(type='single', fields=['week'])
     # Main chart
     p = alt.Chart(all_df).mark_bar().encode(
@@ -2251,8 +2255,12 @@ def main():
         # next try using pd remove nan rows using thresh?
         
         # st.write(global_plot1)
+        st.write('using plot_global_trend2')
         st.altair_chart(global_plot1, use_container_width=True)
         st.write('---')
+
+        st.write('using plot_global_trend')
+        st.write(plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal))
         
         # Prepare df for plot2 and plot3
         summary_df_list = []
