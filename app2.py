@@ -1121,7 +1121,25 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
     else:
         return ''
 
+# this works
 def plot_global_trend2(all_df, kpi_color_pal):
+    """
+    Returns altair charts for global weekly trend and polarity trends for selected weeks.
+
+    Parameters
+    ----------
+    all_df : pandas.core.frame.DataFrame
+        Concatenated dataframe of [concatenated output from get_keyword_frequency for every weeknum,
+        output returned from get_agg_data(cust_tweets, dhl_tweets)].
+    kpi_color_pal : str
+        Name of Altair color scheme, chosen for KPI color code.
+
+    Returns
+    -------
+    altair.vegalite.v4.api.VConcatChart
+        Vertically concatenated altair chart with barchart showing 8 weeks trend on top layer and trending positive and negative keywords barchat on bottom layer.
+
+    """
 
     all_df = all_df.replace(np.nan,0)
 
@@ -1221,7 +1239,20 @@ def plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal):
     # pos_df = df_list[1]
     # neg_df = df_list[2]
 
+    recent_week_agg_df_melted = recent_week_agg_df_melted.replace(np.nan,0)
+    pos_df = pos_df.replace(np.nan, 0)
+    neg_df = neg_df.replace(np.nan, 0)
+
+    recent_week_agg_df_melted['value'] = recent_week_agg_df_melted['value'].apply(lambda x: float(x))
+    recent_week_agg_df_melted['week'] = recent_week_agg_df_melted['week'].apply(lambda x: float(x))
     
+    pos_df['percentage'] = pos_df['percentage'].apply(lambda x: float(x))
+    pos_df['week'] = pos_df['week'].apply(lambda x: float(x))
+    pos_df['count'] = pos_df['count'].apply(lambda x: float(x))
+
+    neg_df['percentage'] = neg_df['percentage'].apply(lambda x: float(x))
+    neg_df['week'] = neg_df['week'].apply(lambda x: float(x))
+    neg_df['count'] = neg_df['count'].apply(lambda x: float(x))
 
     st.write('inside plot_global_trend')
     st.write('recent_week_agg_df_melted', recent_week_agg_df_melted)
@@ -2260,7 +2291,7 @@ def main():
         st.write('---')
 
         st.write('using plot_global_trend')
-        st.write(plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal))
+        st.write(plot_global_trend(recent_week_agg_df_melted.astype(str), pos_df.astype(str), neg_df.astype(str), kpi_color_pal))
         
         # Prepare df for plot2 and plot3
         summary_df_list = []
