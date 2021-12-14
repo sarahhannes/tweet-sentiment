@@ -2204,6 +2204,7 @@ def main():
         
         agg_df['hour'] = agg_df['datetime'].apply(lambda x: x.hour)
         filtered_agg_df = agg_df.melt(id_vars=['hour', 'regional_acc'], value_vars=['Negative Mentions']).groupby(['hour', 'regional_acc']).sum().reset_index()
+        st.write('filtered_agg_df', filtered_agg_df)
         regional_plot4 = plot_regional_heatmap(filtered_agg_df)
         st.write(regional_plot4)
 
