@@ -1160,7 +1160,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 # opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Positive Keywords', width=300, height=100
-                    ).transform_filter(brush)
+                    ).transform_filter(brush).transform_filter(alt.datum.polarity=='positive')
     
     neg_bar = alt.Chart(all_df).transform_window(
         rank='rank()', sort=[alt.SortField('count', order='descending')]
@@ -1173,7 +1173,7 @@ def plot_global_trend2(all_df, kpi_color_pal):
                 # opacity=alt.value(0.5)
                 ).properties(
                     title='Trending Negative Keywords', width=300, height=100
-                    ).transform_filter(brush)
+                    ).transform_filter(brush).transform_filter(alt.datum.polarity=='negative')
     
     # Return concatenated charts
     return alt.vconcat(p, alt.hconcat(pos_bar,neg_bar)
@@ -2231,11 +2231,13 @@ def main():
         # this selects week bar
         # global_plot1 = plot_global_trend([recent_week_agg_df_melted, pos_df, neg_df], kpi_color_pal)
         # exactly copy pasted plot_global_trend def but selects subset of week instead of the whole bar
-        # global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
+        # check filter using transform_filter in polarity graphs
+        global_plot1 = plot_global_trend2(all_df, kpi_color_pal)
         
         # Using the same dfs gives the subset of the week col
         # next, testing if it is due to 2 nans col / or maybe it is due to all the np.nans cols
-        global_plot1 = plot_global_trend([all_df, all_df.drop(columns=['variable', 'value']), all_df], kpi_color_pal)
+        # doesnt work also
+        # global_plot1 = plot_global_trend([all_df, all_df.drop(columns=['variable', 'value']), all_df], kpi_color_pal)
 
         # next try using pd remove nan rows using thresh?
         
