@@ -1122,7 +1122,7 @@ def get_annos(filtered_agg_df, user_input_x, user_input_y, user_input_agg_type, 
         return ''
 
 def plot_global_trend2(all_df, kpi_color_pal):
- 
+    all_df['week'] = all_df['week'].apply(lambda x: int(x))
     brush = alt.selection_single(fields=['week'])
 
     # Main chart
