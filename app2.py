@@ -1225,7 +1225,7 @@ def plot_global_trend(recent_week_agg_df_melted, pos_df, neg_df, kpi_color_pal):
     # Initialize selection
     # brush = alt.selection(type='single', fields=['week'])
     # brush = alt.selection_single(encodings=['x'])
-    brush = alt.selection(type='single', fields=['week'])
+    brush = alt.selection_single(fields=['week'])
 
     # Main chart
     p = alt.Chart(recent_week_agg_df_melted).mark_bar().encode(
