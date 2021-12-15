@@ -1,4 +1,4 @@
-name: CT Workflow Rollback
+name: CT Workflow Rerun
 on:
   workflow_run:
     workflows: ["CT"]
