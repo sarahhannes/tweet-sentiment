@@ -1540,11 +1540,10 @@ def plot_regional_yw(wk_recent_regional_agg_df, regional_acc_color_pal):
             color = alt.Color('regional_acc:N', title='Regional account', scale=alt.Scale(scheme=regional_acc_color_pal)),
             row = alt.Row('Year:O', sort='descending', header=alt.Header(labelOrient='top')),
             opacity=alt.condition(selection, alt.value(1), alt.value(0.01)),
-            tooltip=[alt.Tooltip(field='week', title='week', type='quantitative'),
-                     alt.Tooltip(field='label_percentage', title='Percentage', type='nominal'),
-                     alt.Tooltip(field='value', title='value', type='quantitative'),
-                     alt.Tooltip(field='sum', title='sum', type='quantitative'),
-                     alt.Tooltip(field='Tweet', title='Tweet', type='nominal')]
+            tooltip=[alt.Tooltip(field='week', title='Week', type='quantitative'),
+                    alt.Tooltip(field='variable', title='KPI', type='nominal'),
+                    alt.Tooltip(field='label_percentage', title='Percentage', type='nominal'),
+                    alt.Tooltip(field='Tweet', title='Representative Tweet', type='nominal')]
             ).properties(
                 title={
                     "text": ["Weekly Trend across Years and Regions"], 
@@ -1577,8 +1576,9 @@ def plot_regional_heatmap(filtered_agg_df):
             y = alt.Y('Density:Q', title='Density'),
             row = alt.Row('regional_acc:N',  header=alt.Header(labelOrient='top'), title=''),
             color = alt.Color('Density:Q',  scale=alt.Scale(scheme='lightgreyred')),
-            tooltip = [alt.Tooltip('Density:Q', title='Density', format="0.2f"),
-                       alt.Tooltip('Hour:O', title='Hour of Day', format="1.0f")],
+            tooltip = [alt.Tooltip('regional_acc:N', title='Regional Account'),
+                        alt.Tooltip('Density:Q', title='Density', format="0.2f"),
+                        alt.Tooltip('Hour:O', title='Hour of Day', format="1.0f")]
             ).properties(
                 title={
                     "text": ["Overall Density plot on Negative Mentions across Regions"], 
