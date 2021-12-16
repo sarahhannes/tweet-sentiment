@@ -2,7 +2,7 @@ Twitter Sentiment Analysis [![Open in Streamlit](https://static.streamlit.io/bad
 ==============================
 [![CD](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/cd.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/cd.yml)
 [![CT](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct.yml)
-[![CT Workflow Rerun](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct_rollback.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct_rollback.yml)
+[![CT Workflow Rollback](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct_rollback.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct_rollback.yml)
 
 A Python based project for performing sentiment analysis on Twitter data.
 
