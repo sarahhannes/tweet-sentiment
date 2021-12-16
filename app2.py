@@ -1486,7 +1486,7 @@ def plot_regional_rw(prev_4_weeks_df, kpi_color_pal):
         row = alt.Row('week:O', sort='descending', header=alt.Header(labelOrient='top')),
         tooltip = [alt.Tooltip('variable:N', title='KPI'),
                    alt.Tooltip('frac:Q', title='Percentage', format='.0%'),
-                  alt.Tooltip('regional_acc:N', title='Regional account')],
+                   alt.Tooltip('regional_acc:N', title='Regional Account')],
         opacity = alt.condition(highlight, alt.value(1), alt.value(0.2))
     ).configure_mark(
         strokeWidth=10
@@ -1506,7 +1506,7 @@ def plot_regional_rw(prev_4_weeks_df, kpi_color_pal):
 
 def plot_regional_yw(wk_recent_regional_agg_df, regional_acc_color_pal):
     """
-    PLot Year Week graph across KPI and Regional account.
+    Plot Year Week graph across KPI and Regional account.
 
     Parameters
     ----------
@@ -1542,6 +1542,7 @@ def plot_regional_yw(wk_recent_regional_agg_df, regional_acc_color_pal):
             opacity=alt.condition(selection, alt.value(1), alt.value(0.01)),
             tooltip=[alt.Tooltip(field='week', title='Week', type='quantitative'),
                     alt.Tooltip(field='variable', title='KPI', type='nominal'),
+                    alt.Tooltip(field='regional_acc', title='Regional Account', type='nominal'),
                     alt.Tooltip(field='label_percentage', title='Percentage', type='nominal'),
                     alt.Tooltip(field='Tweet', title='Representative Tweet', type='nominal')]
             ).properties(
@@ -1624,6 +1625,7 @@ def plot_regional_ym(yr_recent_regional_agg_df, regional_acc_color_pal):
             opacity=alt.condition(selection, alt.value(1), alt.value(0.01)),
             tooltip=[alt.Tooltip(field='year-month', title='Year-Month', type='temporal'),
                      alt.Tooltip(field='variable', title='KPI', type='nominal'),
+                     alt.Tooltip(field='regional_acc', title='Regional Account', type='nominal'),
                      alt.Tooltip(field='label_percentage', title='Percentage', type='ordinal'),
                      alt.Tooltip(field='Tweet', title='Representative Tweet', type='nominal')]
             ).properties(
