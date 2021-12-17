@@ -2213,6 +2213,52 @@ def main():
         
         st.write('jupyter heatmap', test_heatmap(filtered_agg_df))
         st.write('jupyter heatmap with str', test_heatmap(filtered_agg_df.astype(str)))
+        
+        st.write('regional tz heatmap = local_region_server_hour', test_heatmap2(filtered_agg_df, 'local_region_server_hour'))
+        st.write('regional tz heatmap = local_server_region_hour', test_heatmap2(filtered_agg_df, 'local_server_region_hour'))
+        
+        st.write('regional tz heatmap = local_region_server_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_region_server_hour'))
+        st.write('regional tz heatmap = local_server_region_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_server_region_hour'))
+
+def invert_dict(d):
+        d_inv = defaultdict(list)
+        for k, v in d.items():
+            d_inv[v].append(k)
+        return d_inv
+
+def test_heatmap2(agg_df, xx):
+    import pycountry
+    from collections import Counter, defaultdict
+    from pytz import country_timezones
+
+    timezone_country = {}
+    for countrycode in country_timezones:
+        timezones = country_timezones[countrycode]
+        for timezone in timezones:
+            timezone_country[timezone] = countrycode
+
+    countrycode_tz = invert_dict(timezone_country)
+
+    heatmap_df = agg_df.melt(id_vars=['hour', 'regional_acc'], value_vars=['Negative Mentions']).groupby(['hour', 'regional_acc']).sum().reset_index()
+    heatmap_df['datetime'] = heatmap_df['hour'].apply(lambda x: pd.to_datetime(datetime.datetime.strptime(str(x), "%H")))
+    heatmap_df['countryname'] = heatmap_df['regional_acc'].apply(lambda x: x.replace('dhlexpress', ''))
+    heatmap_df['countrycode'] = heatmap_df['countryname'].apply(lambda x: 'GB' if x == 'uk' else pycountry.countries.search_fuzzy(x)[0].alpha_2)
+    heatmap_df['timezone'] = heatmap_df['countrycode'].apply(lambda x: countrycode_tz[x])
+    heatmap_df['local_server_region'] = heatmap_df.apply(lambda row: row['datetime'].tz_localize(local_tz).tz_convert(server_tz).tz_convert(row['timezone'][0]), axis=1)
+    heatmap_df['local_region_server'] = heatmap_df.apply(lambda row: row['datetime'].tz_localize(local_tz).tz_convert(row['timezone'][0]).tz_convert(server_tz), axis=1)
+    heatmap_df['local_region_server_hour'] = heatmap_df['local_region_server'].apply(lambda x: x.hour)
+    heatmap_df['local_server_region_hour'] = heatmap_df['local_server_region'].apply(lambda x: x.hour)
+    
+    return alt.Chart(heatmap_df.melt(id_vars=[xx, 'regional_acc'], value_vars=['value']).groupby([xx, 'regional_acc']).sum().reset_index()).transform_density(
+        xx, groupby=['regional_acc'], as_=['HOUR', 'DENSITY'], extent=[0,24]).mark_bar(binSpacing=2).encode(
+        x=alt.X("HOUR:Q",   scale=alt.Scale(domain=[0, 24]), bin=alt.Bin(maxbins=24)),#,
+        y=alt.Y('DENSITY:Q'),
+        row=alt.Row('regional_acc:N'),
+        color=alt.Color('DENSITY:Q',  scale=alt.Scale(scheme='lightgreyred')),
+        tooltip = [alt.Tooltip('DENSITY:Q', title='Density', format="0.2f"),
+                   alt.Tooltip('HOUR:O', title='Hour of Day', format="1.0f")]).properties(width=300, height=50)
+
+
 
 def test_heatmap(df):
     return alt.Chart(df).transform_density('hour', groupby=['regional_acc'], as_=['HOUR', 'DENSITY'], extent=[0,24]).mark_bar(binSpacing=2).encode(
