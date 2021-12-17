@@ -2214,8 +2214,8 @@ def main():
         st.write('jupyter heatmap', test_heatmap(filtered_agg_df))
         st.write('jupyter heatmap with str', test_heatmap(filtered_agg_df.astype(str)))
         
-        st.write('regional tz heatmap = local_region_server_hour', test_heatmap2(filtered_agg_df, 'local_region_server_hour'))
-        st.write('regional tz heatmap = local_server_region_hour', test_heatmap2(filtered_agg_df, 'local_server_region_hour'))
+        st.write('regional tz heatmap = local_region_server_hour', test_heatmap2(agg_df, 'local_region_server_hour'))
+        st.write('regional tz heatmap = local_server_region_hour', test_heatmap2(agg_df, 'local_server_region_hour'))
         
         st.write('regional tz heatmap = local_region_server_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_region_server_hour'))
         st.write('regional tz heatmap = local_server_region_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_server_region_hour'))
