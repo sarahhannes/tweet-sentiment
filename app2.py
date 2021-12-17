@@ -2214,11 +2214,11 @@ def main():
         st.write('jupyter heatmap', test_heatmap(filtered_agg_df))
         st.write('jupyter heatmap with str', test_heatmap(filtered_agg_df.astype(str)))
         
-        st.write('regional tz heatmap = local_region_server_hour', test_heatmap2(agg_df, 'local_region_server_hour'))
-        st.write('regional tz heatmap = local_server_region_hour', test_heatmap2(agg_df, 'local_server_region_hour'))
+        st.write('regional tz heatmap = local_region_server_hour', test_heatmap2(agg_df, 'local_region_server_hour', local_tz, server_tz))
+        st.write('regional tz heatmap = local_server_region_hour', test_heatmap2(agg_df, 'local_server_region_hour', local_tz, server_tz))
         
-        st.write('regional tz heatmap = local_region_server_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_region_server_hour'))
-        st.write('regional tz heatmap = local_server_region_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_server_region_hour'))
+        st.write('regional tz heatmap = local_region_server_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_region_server_hour', local_tz, server_tz))
+        st.write('regional tz heatmap = local_server_region_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_server_region_hour', local_tz, server_tz))
 
 def invert_dict(d):
     from collections import Counter, defaultdict
@@ -2227,7 +2227,7 @@ def invert_dict(d):
         d_inv[v].append(k)
     return d_inv
 
-def test_heatmap2(agg_df, xx):
+def test_heatmap2(agg_df, xx, local_tz, server_tz):
     import pycountry
     
     from pytz import country_timezones
