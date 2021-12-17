@@ -2221,14 +2221,15 @@ def main():
         st.write('regional tz heatmap = local_server_region_hour with df.astype(str)', test_heatmap2(agg_df.astype(str), 'local_server_region_hour'))
 
 def invert_dict(d):
-        d_inv = defaultdict(list)
-        for k, v in d.items():
-            d_inv[v].append(k)
-        return d_inv
+    from collections import Counter, defaultdict
+    d_inv = defaultdict(list)
+    for k, v in d.items():
+        d_inv[v].append(k)
+    return d_inv
 
 def test_heatmap2(agg_df, xx):
     import pycountry
-    from collections import Counter, defaultdict
+    
     from pytz import country_timezones
 
     timezone_country = {}
