@@ -63,3 +63,4 @@ mlflow==1.20.2
 textblob==0.15.3
 vaderSentiment==3.3.2
 google-cloud-storage==1.19.0
+pycountry==20.7.3
