@@ -1604,7 +1604,7 @@ def plot_regional_heatmap(agg_df, converted_tz_col, local_tz, server_tz):
         x=alt.X("HOUR:Q",   title='Hour of Day', scale=alt.Scale(domain=[0, 24]), bin=alt.Bin(maxbins=24)),
         y=alt.Y('DENSITY:Q', title='Density'),
         row = alt.Row('regional_acc:N',  header=alt.Header(labelOrient='top'), title=''),
-        color = alt.Color('DENSITY:Q',  scale=alt.Scale(scheme='lightgreyred')),
+        color = alt.Color('DENSITY:Q', title='Density', scale=alt.Scale(scheme='lightgreyred')),
         tooltip = [alt.Tooltip('regional_acc:N', title='Regional Account'),
                    alt.Tooltip('DENSITY:Q', title='Density', format="0.2f"),
                    alt.Tooltip('HOUR:O', title='Hour of Day', format="1.0f")]
