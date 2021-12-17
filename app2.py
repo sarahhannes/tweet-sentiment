@@ -2210,7 +2210,18 @@ def main():
         regional_plot4 = plot_regional_heatmap(filtered_agg_df)
         st.write(regional_plot4)
         st.write('test using df.astype(str)',plot_regional_heatmap(filtered_agg_df.astype(str)))
+        
+        st.write('jupyter heatmap', test_heatmap(filtered_agg_df))
+        st.write('jupyter heatmap with str', test_heatmap(filtered_agg_df.astype(str)))
 
+def test_heatmap2(df):
+    return alt.Chart(df).transform_density('hour', groupby=['regional_acc'], as_=['HOUR', 'DENSITY'], extent=[0,24]).mark_bar(binSpacing=2).encode(
+        x=alt.X("HOUR:Q",   scale=alt.Scale(domain=[0, 24]), bin=alt.Bin(maxbins=24)),#,
+        y=alt.Y('DENSITY:Q'),
+        row=alt.Row('regional_acc:N'),
+        color=alt.Color('DENSITY:Q',  scale=alt.Scale(scheme='lightgreyred')),
+        tooltip = [alt.Tooltip('DENSITY:Q', title='Density', format="0.2f"),
+                   alt.Tooltip('HOUR:O', title='Hour of Day', format="1.0f")]).properties(width=300, height=50)
 
 if __name__ == '__main__':
     main()
