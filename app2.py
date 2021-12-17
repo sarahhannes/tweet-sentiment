@@ -2214,7 +2214,7 @@ def main():
         st.write('jupyter heatmap', test_heatmap(filtered_agg_df))
         st.write('jupyter heatmap with str', test_heatmap(filtered_agg_df.astype(str)))
 
-def test_heatmap2(df):
+def test_heatmap(df):
     return alt.Chart(df).transform_density('hour', groupby=['regional_acc'], as_=['HOUR', 'DENSITY'], extent=[0,24]).mark_bar(binSpacing=2).encode(
         x=alt.X("HOUR:Q",   scale=alt.Scale(domain=[0, 24]), bin=alt.Bin(maxbins=24)),#,
         y=alt.Y('DENSITY:Q'),
