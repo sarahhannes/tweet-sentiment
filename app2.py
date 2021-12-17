@@ -1601,8 +1601,8 @@ def plot_regional_heatmap(agg_df, converted_tz_col, local_tz, server_tz):
     
     return alt.Chart(heatmap_df.melt(id_vars=[converted_tz_col, 'regional_acc'], value_vars=['value']).groupby([converted_tz_col, 'regional_acc']).sum().reset_index()).transform_density(
         converted_tz_col, groupby=['regional_acc'], as_=['HOUR', 'DENSITY'], extent=[0,24]).mark_bar(binSpacing=2).encode(
-        x=alt.X("HOUR:Q",   scale=alt.Scale(domain=[0, 24]), bin=alt.Bin(maxbins=24)),#,
-        y=alt.Y('DENSITY:Q'),
+        x=alt.X("HOUR:Q",   title='Hour of Day', scale=alt.Scale(domain=[0, 24]), bin=alt.Bin(maxbins=24)),
+        y=alt.Y('DENSITY:Q', title='Density'),
         row = alt.Row('regional_acc:N',  header=alt.Header(labelOrient='top'), title=''),
         color = alt.Color('DENSITY:Q',  scale=alt.Scale(scheme='lightgreyred')),
         tooltip = [alt.Tooltip('regional_acc:N', title='Regional Account'),
@@ -2266,14 +2266,7 @@ def main():
         st.write('---')
         
         agg_df['hour'] = agg_df['datetime'].apply(lambda x: x.hour)
-#        st.write(agg_df)
-#        filtered_agg_df = agg_df.melt(id_vars=['hour', 'regional_acc'], value_vars=['Negative Mentions']).groupby(['hour', 'regional_acc']).sum().reset_index()
-#        regional_plot4 = plot_regional_heatmap(filtered_agg_df)
-#        st.write(regional_plot4)
-#        st.write('test using df.astype(str)',plot_regional_heatmap(filtered_agg_df.astype(str)))
-
         st.write(plot_regional_heatmap(agg_df, 'local_region_server_hour', local_tz, server_tz))
-
 
 
 if __name__ == '__main__':
