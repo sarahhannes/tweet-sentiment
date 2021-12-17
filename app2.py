@@ -1599,7 +1599,7 @@ def plot_regional_heatmap(agg_df, converted_tz_col, local_tz, server_tz):
     heatmap_df['local_region_server_hour'] = heatmap_df['local_region_server'].apply(lambda x: x.hour)
     heatmap_df['local_server_region_hour'] = heatmap_df['local_server_region'].apply(lambda x: x.hour)
     
-    return alt.Chart(heatmap_df.melt(id_vars=[converted_tz_col, 'regional_acc'], value_vars=['value']).groupby([xx, 'regional_acc']).sum().reset_index()).transform_density(
+    return alt.Chart(heatmap_df.melt(id_vars=[converted_tz_col, 'regional_acc'], value_vars=['value']).groupby([converted_tz_col, 'regional_acc']).sum().reset_index()).transform_density(
         converted_tz_col, groupby=['regional_acc'], as_=['HOUR', 'DENSITY'], extent=[0,24]).mark_bar(binSpacing=2).encode(
         x=alt.X("HOUR:Q",   scale=alt.Scale(domain=[0, 24]), bin=alt.Bin(maxbins=24)),#,
         y=alt.Y('DENSITY:Q'),
