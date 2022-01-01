@@ -1,7 +1,7 @@
 name: CD
-on:
-  schedule:
-    - cron: '0 * * * *'
+on: workflow_dispatch
+#   schedule:
+#     - cron: '0 * * * *'
 
 defaults:
   run:
