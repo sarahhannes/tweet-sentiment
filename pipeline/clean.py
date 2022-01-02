@@ -62,6 +62,18 @@ def get_hashtags(tweet):
     """
     return list(set([re.sub(r'[^0-9a-zA-Z]', '', tweet) for tweet in tweet.split() if tweet.startswith("#")]))
 
+def get_username(tweet):
+    """
+    input: string
+    Using regex to get cleaned username from within <..> from each tweet.
+    output: string
+    """
+    try:
+      username = re.match('\<.*?\>', tweet).group(0)
+    except AttributeError:
+      return ''
+    return username.replace('<', '').replace('>', '').strip()
+
 
 if __name__ == "__main__":
 
@@ -96,7 +108,10 @@ if __name__ == "__main__":
     df = df.rename(columns={0: 'tweet_id', 1: 'date', 2: 'time', 3: 'timezone', 4: 'tweet'})
 
     # 2: Extract username
-    df['username'] = df['tweet'].apply(lambda x: re.match('\<(.*?)\>', x).group()[1:-1])
+    df['username'] = df['tweet'].apply(lambda x: get_username(x))
+    
+    # Remove bad rows
+    df = df.drop(index=df[df['username']==''].index)
 
     # 3: Removed <username> from tweets
     df['tweet_cleaned'] = df['tweet'].apply(lambda x: re.sub(re.match('\<(.*?)\>', x).group(), '', x))
