@@ -1,7 +1,7 @@
 name: CT
 on:
   schedule:
-    - cron: '0 23 4 * *' # At 23:00 on day-of-month 4
+    - cron: '0 23 5 * *' # At 23:00 on day-of-month 5
 
 defaults:
   run:
