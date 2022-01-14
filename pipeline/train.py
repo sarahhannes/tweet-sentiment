@@ -265,7 +265,7 @@ def resample_data(k_neighbors):
     y = df_final['polarity']
 
     # Vectorize using bigram tfidf
-    tfidf = TfidfVectorizer(lowercase=False, ngram_range=(2, 2), preprocessor=remove_link_lemma)
+    tfidf = TfidfVectorizer(lowercase=False, ngram_range=(1, 1), preprocessor=remove_link)
 
     # Fit and transform
     Xtfidf = tfidf.fit_transform(X)
