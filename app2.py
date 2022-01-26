@@ -2245,9 +2245,9 @@ def main():
         # Define regional username
         regional_acc_list = ['dhlexpressuk', 'dhlexpressfr', 'dhlexpressitaly', 'dhlexpressmy', 'dhlexpressindia']
         grouped_summary_df, agg_df = get_regional_summary_df(regional_acc_list, regional_ct, regional_dt)
+        
         st.write('grouped_summary_df', grouped_summary_df.astype(str))
 
-        grouped_summary_df['regional_acc'] = grouped_summary_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', x)))
         wk_recent_regional_agg_df = grouped_summary_df[(grouped_summary_df['regional_acc'].isin(regional_acc_list)) & (grouped_summary_df['period']=='year-week') ].reset_index(drop=True)
         wk_recent_regional_agg_df['week'] = wk_recent_regional_agg_df['year-week'].apply(lambda x: int(x[-2:]))
         
@@ -2255,6 +2255,7 @@ def main():
         prev_4_weeks_year, prev_4_weeks_weeknum, *_ = prev_4_weeks.isocalendar()
         selected_week_year, selected_week_weeknum, *_ = selected_week.isocalendar()
         prev_4_weeks_df = wk_recent_regional_agg_df[(wk_recent_regional_agg_df['year-week']>=str(prev_4_weeks_year)+'-'+str(prev_4_weeks_weeknum)) & (wk_recent_regional_agg_df['year-week']<=str(selected_week_year)+'-'+str(selected_week_weeknum))]
+        prev_4_weeks_df['regional_acc'] = prev_4_weeks_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', x)))
         regional_plot1 = plot_regional_rw(prev_4_weeks_df, kpi_color_pal)
         st.write(regional_plot1)
         st.write('---')
