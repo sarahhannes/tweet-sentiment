@@ -2245,6 +2245,7 @@ def main():
         # Define regional username
         regional_acc_list = ['dhlexpressuk', 'dhlexpressfr', 'dhlexpressitaly', 'dhlexpressmy', 'dhlexpressindia']
         grouped_summary_df, agg_df = get_regional_summary_df(regional_acc_list, regional_ct, regional_dt)
+        grouped_summary_df['year-month'] = grouped_summary_df['year-month'].apply(lambda x: x.astype(str))
         st.write('grouped_summary_df', grouped_summary_df)
 
         grouped_summary_df['regional_acc'] = grouped_summary_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', x)))
