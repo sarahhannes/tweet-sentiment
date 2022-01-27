@@ -2255,21 +2255,28 @@ def main():
         prev_4_weeks_year, prev_4_weeks_weeknum, *_ = prev_4_weeks.isocalendar()
         selected_week_year, selected_week_weeknum, *_ = selected_week.isocalendar()
         prev_4_weeks_df = wk_recent_regional_agg_df[(wk_recent_regional_agg_df['year-week']>=str(prev_4_weeks_year)+'-'+str(prev_4_weeks_weeknum)) & (wk_recent_regional_agg_df['year-week']<=str(selected_week_year)+'-'+str(selected_week_weeknum))]
+        # Rename dhlexpress into full country names eg dhlexpressmy -> Malaysia
         prev_4_weeks_df['regional_acc'] = prev_4_weeks_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', np.where(x=='dhlexpressitaly', 'Italy', np.where(x=='dhlexpressmy', 'Malaysia', 'India')))))
         regional_plot1 = plot_regional_rw(prev_4_weeks_df, kpi_color_pal)
         st.write(regional_plot1)
         st.write('---')
         
         yr_recent_regional_agg_df = grouped_summary_df[(grouped_summary_df['regional_acc'].isin(regional_acc_list)) & (grouped_summary_df['period']=='year-month')].reset_index(drop=True)
+        # Rename dhlexpress into full country names eg dhlexpressmy -> Malaysia
+        yr_recent_regional_agg_df['regional_acc'] = yr_recent_regional_agg_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', np.where(x=='dhlexpressitaly', 'Italy', np.where(x=='dhlexpressmy', 'Malaysia', 'India')))))
         regional_plot2 = plot_regional_ym(yr_recent_regional_agg_df, regional_acc_color_pal)
         st.write(regional_plot2)
         st.write('---')
         
+        # Rename dhlexpress into full country names eg dhlexpressmy -> Malaysia
+        wk_recent_regional_agg_df['regional_acc'] = wk_recent_regional_agg_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', np.where(x=='dhlexpressitaly', 'Italy', np.where(x=='dhlexpressmy', 'Malaysia', 'India')))))
         regional_plot3 = plot_regional_yw(wk_recent_regional_agg_df, regional_acc_color_pal)
         st.write(regional_plot3)
         st.write('---')
         
         agg_df['hour'] = agg_df['datetime'].apply(lambda x: x.hour)
+        # Rename dhlexpress into full country names eg dhlexpressmy -> Malaysia
+        agg_df['regional_acc'] = agg_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', np.where(x=='dhlexpressitaly', 'Italy', np.where(x=='dhlexpressmy', 'Malaysia', 'India')))))
         st.write(plot_regional_heatmap(agg_df, 'local_region_server_hour', local_tz, server_tz))
 
 
