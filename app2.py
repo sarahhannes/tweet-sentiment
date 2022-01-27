@@ -2255,7 +2255,7 @@ def main():
         prev_4_weeks_year, prev_4_weeks_weeknum, *_ = prev_4_weeks.isocalendar()
         selected_week_year, selected_week_weeknum, *_ = selected_week.isocalendar()
         prev_4_weeks_df = wk_recent_regional_agg_df[(wk_recent_regional_agg_df['year-week']>=str(prev_4_weeks_year)+'-'+str(prev_4_weeks_weeknum)) & (wk_recent_regional_agg_df['year-week']<=str(selected_week_year)+'-'+str(selected_week_weeknum))]
-        prev_4_weeks_df['regional_acc'] = prev_4_weeks_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', x)))
+        prev_4_weeks_df['regional_acc'] = prev_4_weeks_df['regional_acc'].apply(lambda x: np.where(x=='dhlexpressuk', 'UK', np.where(x=='dhlexpressfr', 'France', np.where(x=='dhlexpressitaly', 'Italy', np.where(x=='dhlexpressmy', 'Malaysia', 'India')))))
         regional_plot1 = plot_regional_rw(prev_4_weeks_df, kpi_color_pal)
         st.write(regional_plot1)
         st.write('---')
