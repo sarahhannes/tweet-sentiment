@@ -16,6 +16,10 @@ Architecture Overview
 ------------
 ![flowcharts-pipelines (6)](https://user-images.githubusercontent.com/78901374/145487611-43c9be19-ab46-475a-9f77-770f19ae08e5.png)
 
+Simplified View of Pipelines
+------------
+![flowcharts-DAG for black background drawio](https://user-images.githubusercontent.com/78901374/157574470-f29bf415-ce8a-4c76-a605-b1e27a28c40d.png)
+
 Dashboard
 ------------
 <i> Click [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/sarahhannes/tweet-sentiment/dev/app2.py) to view dashboard! </i>
