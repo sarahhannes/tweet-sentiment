@@ -69,7 +69,7 @@ Limitations & Roadblocks
 - Unfortunately, hardly reproducible due to manual pipeline integration & authentication processes.
 - Dashboard is not scalable. Currently the twitter handle belonging to twitter accounts of interests were hardcoded in python file served on {Streamlit} for data analysis and visualization.
 - No fallbacks on failed scheduled Actions.
-- Roadblock: As of Jan 2022, GitHub Action build fail due to dependencies installation error. This affects both the scheduled pipelines and dashboard.<a href="https://github.blog/changelog/2022-01-11-github-actions-jobs-running-on-windows-latest-are-now-running-on-windows-server-2022/#:~:text=actions-,GitHub%20Actions%3A%20Jobs%20running%20on%20%60windows%2Dlatest%60%20are,running%20on%20Windows%20Server%202022.&text=Windows%20Server%202022%20became%20generally,2019%20to%20Windows%20Server%202022."> (See Ref)</a>
+- Roadblock: As of Jan 2022, GitHub Action build may fail due to dependencies installation error. This affects both the scheduled pipelines and dashboard.<a href="https://github.blog/changelog/2022-01-11-github-actions-jobs-running-on-windows-latest-are-now-running-on-windows-server-2022/#:~:text=actions-,GitHub%20Actions%3A%20Jobs%20running%20on%20%60windows%2Dlatest%60%20are,running%20on%20Windows%20Server%202022.&text=Windows%20Server%202022%20became%20generally,2019%20to%20Windows%20Server%202022."> (See Ref)</a>
 
 Credits
 --------
