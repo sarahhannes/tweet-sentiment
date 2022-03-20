@@ -14,7 +14,7 @@ git+https://github.com/himanshudabas/twint.git@twint-fixes
 #git+https://github.com/himanshudabas/twint.git@origin/twint-fixes#egg=twint
 
 nest_asyncio==1.5.1
-pathlib
+#pathlib
 setuptools==57.4.0
 pyprojroot~=0.2.0
 #pandas==1.1.5
