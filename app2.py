@@ -1881,7 +1881,7 @@ def main():
                           reorderable=True,
                           scroll_to_selection=True,
                           sortable=True,
-                          selectable="checkbox", aspect_ratio='auto', autosize_mode='fit_viewport')#width=735)
+                          selectable="checkbox", aspect_ratio='auto', width=4000)
             
             # Get event dict containing data from user input on rendered bokeh_plot
             # ref: https://github.com/ash2shukla/streamlit-bokeh-events/blob/master/streamlit_bokeh_events/__init__.py#L21
