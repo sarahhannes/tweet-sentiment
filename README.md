@@ -1,10 +1,11 @@
-Twitter Sentiment Analysis [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/sarahhannes/tweet-sentiment/dev/app2.py)
+Twitter Sentiment Analysis 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/sarahhannes/tweet-sentiment/dev/app2.py) 
 ==============================
 [![CD](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/cd.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/cd.yml)
 [![CT](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct.yml/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct.yml)
 [![CT_Workflow_Rerun](https://github.com/SarahHannes/tweet-sentiment/workflows/CT%20Workflow%20Rerun/badge.svg)](https://github.com/SarahHannes/tweet-sentiment/actions/workflows/ct_rerun.yml)
 
-A Python based project for performing sentiment analysis on Twitter data.
+A Python based project for performing sentiment analysis on Twitter data. Get <a href="https://docs.google.com/viewer?srcid=1Eo0UGMQTx9UBntdb4pg39QOOmJhlUfZJ&pid=explorer&efh=false&a=v&chrome=false">full project paper</a> here.
 - Twitter data is hourly scraped using {twint} package.
 - Scheduled model training is performed monthly on MLflow served on a `g1-small` GCP Compute Engine instance.
 - Model training artifacts are stored in GCP Cloud Storage.
