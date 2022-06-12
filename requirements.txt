@@ -38,7 +38,8 @@ matplotlib>=3.0.0
 altair==4.1.0
 gspread_pandas==2.3.0
 jsonschema==3.2
-streamlit
+#streamlit
+streamlit==0.89.0
 bokeh==2.3.3
 #pandas==1.2.4
 pandas>=1.0.0
