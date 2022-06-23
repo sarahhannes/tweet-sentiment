@@ -68,3 +68,5 @@ vaderSentiment==3.3.2
 google-cloud-storage==1.19.0
 pycountry==20.7.3
 pywinpty==0.5.7
+chardet2
+urllib3
