@@ -27,6 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
             python -m pip install --upgrade pip
+            pip install pywinpty==0.5.7
             pip install -r requirements.txt
 
       - name: Scrape for new data and append to file
@@ -71,6 +72,7 @@ jobs:
       - name: Install dependencies
         run: |
             python -m pip install --upgrade pip
+            pip install pywinpty==0.5.7
             pip install -r requirements.txt
             
       - name: Setup Cloud SDK
@@ -121,6 +123,7 @@ jobs:
       - name: Install dependencies
         run: |
             python -m pip install --upgrade pip
+            pip install pywinpty==0.5.7
             pip install -r requirements.txt
 
       - name: Run append.py
@@ -170,6 +173,7 @@ jobs:
       - name: Install dependencies
         run: |
             python -m pip install --upgrade pip
+            pip install pywinpty==0.5.7
             pip install -r requirements.txt
 
       - name: Run update.py
